@@ -63,7 +63,7 @@ const SoflanIcon = ({ soflans, highSpeed }: SoflanIconProps) => {
       {soflans.slice(1).map((soflan, i) => {
         const y = soflan.division * arrowSize * 4 * highSpeed + arrowSize / 2 - 16;
         const faster = soflan.bpm > soflans[i].bpm;
-        const source = faster ? "/speed_up.png" : "/speed_down.png";
+        const source = faster ? "/skin/speed_up.png" : "/skin/speed_down.png";
         return (
           <Sprite image={source} x={canvasLeftSpace + arrowSize * 4 + 10} y={y} height={32} width={32} key={`soflanicon-${y}`} />
         )
@@ -94,7 +94,7 @@ const StopIcon = ({ stops, highSpeed }: StopIconProps) => {
     <>
       {stops.map(stop => {
         const y = stop.division * arrowSize * 4 * highSpeed + arrowSize / 2 - 16;
-        return <Sprite image={"/stop.png"} x={canvasLeftSpace + arrowSize * 4 + 10 + 32} y={y} height={32} width={32} key={`stopicon-${y}`} />
+        return <Sprite image={"/skin/stop.png"} x={canvasLeftSpace + arrowSize * 4 + 10 + 32} y={y} height={32} width={32} key={`stopicon-${y}`} />
       })}
     </>
   );
@@ -303,10 +303,10 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
 const StepZone = () => {
   return (
     <Container>
-      <Sprite image={`/left_stepzone.png`} x={canvasLeftSpace} y={0} height={arrowSize} width={arrowSize} />
-      <Sprite image={`/down_stepzone.png`} x={canvasLeftSpace + arrowSize} y={0} height={arrowSize} width={arrowSize} />
-      <Sprite image={`/up_stepzone.png`} x={canvasLeftSpace + arrowSize * 2} y={0} height={arrowSize} width={arrowSize} />
-      <Sprite image={`/right_stepzone.png`} x={canvasLeftSpace + arrowSize * 3} y={0} height={arrowSize} width={arrowSize} />
+      <Sprite image={`/skin/left_stepzone.png`} x={canvasLeftSpace} y={0} height={arrowSize} width={arrowSize} />
+      <Sprite image={`/skin/down_stepzone.png`} x={canvasLeftSpace + arrowSize} y={0} height={arrowSize} width={arrowSize} />
+      <Sprite image={`/skin/up_stepzone.png`} x={canvasLeftSpace + arrowSize * 2} y={0} height={arrowSize} width={arrowSize} />
+      <Sprite image={`/skin/right_stepzone.png`} x={canvasLeftSpace + arrowSize * 3} y={0} height={arrowSize} width={arrowSize} />
     </Container>
   )
 }
