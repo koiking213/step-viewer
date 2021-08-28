@@ -1,25 +1,95 @@
-import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
+import songs from './songs.json'
+import { useState } from "react"
+import { Stream, Gimmick } from './types/index'
+import { accessToken } from './token'
+import { Dropbox } from 'dropbox'
+import ReactLoading from 'react-loading';
+import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
+import SongTable from './components/table'
+import ChartArea from './components/chart_area'
+
+function downloadFromDropbox(filepath: string, successCallback: (blob: any) => void) {
+  const dbx = new Dropbox({ accessToken: accessToken });
+  dbx.filesDownload({ path: filepath })
+    .then((response) => {
+      successCallback((response.result as any).fileBlob)
+    })
+    .catch(function (error: any) {
+      console.log(error)
+    });
+}
+
+function getAudio(filepath: string, setter: (audio: HTMLAudioElement) => void, loading: (b: boolean) => void) {
+  downloadFromDropbox(filepath, (blob) => {
+    const audio = new Audio(URL.createObjectURL(blob))
+    setter(audio)
+    loading(false)
+  })
+}
+
+function getGimmick(filepath: string, setter: (gimmick: Gimmick) => void) {
+  downloadFromDropbox(filepath, (blob) => {
+    blob.text().then((text: string) => {
+      const json: Gimmick = JSON.parse(text)
+      setter(json)
+    })
+  })
+};
+
+function getSong(filepath: string, setter: (song: Stream) => void) {
+  downloadFromDropbox(filepath, (blob) => {
+    blob.text().then((text: string) => {
+      const json: Stream = JSON.parse(text)
+      setter(json)
+    })
+  })
+};
+
+type SongInfoProps = { title: string, difficulty: string };
+const SongInfo = ({ title, difficulty }: SongInfoProps) => {
+  return <div>{`${title} (${difficulty})`}</div>
+}
+
+
+
 function App() {
+  const emptyStream: Stream = JSON.parse('{"stream":[], "cost":-1}');
+  const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
+  const [stream, setStream] = useState(emptyStream)
+  const [gimmick, setGimmick] = useState(emptyGimmick)
+  const [audio, setAudio] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
+  const [chartOffset, setChartOffset] = useState(0)
+  const [title, setTitle] = useState('title')
+  const [difficulty, setDifficulty] = useState('difficulty')
+  const [isLoading, setIsLoading] = useState(false)
+
+  function setSong(title: string, dirName: string, difficulty: string, musicPath: string, musicOffset: number): void {
+    audio.pause()
+    setIsLoading(true)
+    getSong(`/${dirName}/${difficulty}.json`, setStream)
+    getGimmick(`/${dirName}/gimmick.json`, setGimmick)
+    getAudio(`/${dirName}/${musicPath}`, setAudio, setIsLoading)
+    setChartOffset(musicOffset)
+    setTitle(title)
+    setDifficulty(difficulty)
+  }
+  const loading = isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
+  // TODO: Boxに指定してるmって何
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <Box sx={{ my: 4 }}>
+        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={chartOffset} />
+        <Box display="flex" justifyContent="center" m={1}>
+          <SongInfo title={title} difficulty={difficulty} />
+          {loading}
+        </Box>
+        <SongTable key={audio.src} songs={songs} setSong={setSong}
+        />
+      </Box>
+    </Container>
   );
 }
 
