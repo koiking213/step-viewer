@@ -111,30 +111,25 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
   useEffect(() => {
     console.log("gimmickViewer:", gimmickViewer);
   }, [gimmickViewer]);
-  // なんでかエラーになる
-  //const soflan = () => {
-  //  switch (gimmickViewer) {
-  //    case "detail": return (<SoflanDetail soflans={gimmick.soflan} highSpeed={highSpeed} />);
-  //    case "icon": return (<SoflanIcon soflans={gimmick.soflan} highSpeed={highSpeed} />);
-  //    case "off": return (<></>);
-  //  }
-  //}
-  //const stop = () => {
-  //  switch (gimmickViewer) {
-  //    case "detail": return <StopDetail stops={gimmick.stop} highSpeed={highSpeed} />
-  //    case "icon": return <StopIcon stops={gimmick.stop} highSpeed={highSpeed} />
-  //    case "off": return <></>
-  //  }
-  //}
-  const soflan = gimmickViewer === "detail" ? <SoflanDetail soflans={gimmick.soflan} highSpeed={highSpeed} /> : (
-    gimmickViewer === "icon" ? <SoflanIcon soflans={gimmick.soflan} highSpeed={highSpeed} /> : <></>);
-  const stop = gimmickViewer === "detail" ? <StopDetail stops={gimmick.stop} highSpeed={highSpeed} /> : (
-    gimmickViewer === "icon" ? <StopIcon stops={gimmick.stop} highSpeed={highSpeed} /> : <></>);
+  const Soflan = () => {
+    switch (gimmickViewer) {
+      case "detail": return (<SoflanDetail soflans={gimmick.soflan} highSpeed={highSpeed} />);
+      case "icon": return (<SoflanIcon soflans={gimmick.soflan} highSpeed={highSpeed} />);
+      case "off": return (<></>);
+    }
+  }
+  const Stop = () => {
+    switch (gimmickViewer) {
+      case "detail": return <StopDetail stops={gimmick.stop} highSpeed={highSpeed} />
+      case "icon": return <StopIcon stops={gimmick.stop} highSpeed={highSpeed} />
+      case "off": return <></>
+    }
+  }
   return (
     <Container>
       {divisionLines}
-      {soflan}
-      {stop}
+      <Soflan />
+      <Stop />
     </Container>
   );
 }

@@ -76,15 +76,14 @@ function App() {
     setTitle(title)
     setDifficulty(difficulty)
   }
-  const loading = isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
-  // TODO: Boxに指定してるmって何
+  const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
   return (
     <Container>
       <Box sx={{ my: 4 }}>
         <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={chartOffset} />
         <Box display="flex" justifyContent="center" m={1}>
           <SongInfo title={title} difficulty={difficulty} />
-          {loading}
+          <Loading />
         </Box>
         <SongTable key={audio.src} songs={songs} setSong={setSong}
         />
