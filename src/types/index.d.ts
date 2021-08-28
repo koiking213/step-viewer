@@ -53,3 +53,11 @@ export type Gimmick = {
   soflan: Soflan[];
   stop: Stop[];
 }
+
+type GimmickType = 'soflan' | 'stop';
+
+export type TimingInfo = {
+  type: GimmickType;
+  division: number;
+  value: number;
+};

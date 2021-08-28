@@ -7,7 +7,7 @@ import {
   Text,
 } from "@inlet/react-pixi";
 import { settings, SCALE_MODES } from "pixi.js";
-import { Stream, Gimmick, Stop, Soflan } from "../types/index";
+import { Stream, Gimmick, Stop, Soflan, TimingInfo } from "../types/index";
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
 import Grid from '@material-ui/core/Grid'
@@ -27,6 +27,7 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
+import { getDivision } from './chart_area/get_division';
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -162,58 +163,6 @@ const Canvas = ({ stream, highSpeed }: CanvasProps) => {
     .flat();
   return <Container>{arrows}</Container>;
 };
-
-type TimingInfo = {
-  type: string;
-  division: number;
-  value: number;
-};
-
-// todo: 流石にもうちょっと簡潔に書けるはず
-// bpm120, 1divに2sかかる -> 1divにかかるtime = 4/(bpm/60)
-// bps = bpm/60
-// d/s = bpm/240
-// time = div*240/bpm
-// div = time*bpm/240
-function getTimeFromDiv(division: number, bpm: number) {
-  return division * 240 / bpm
-}
-function getDivFromTime(time: number, bpm: number) {
-  return time * bpm / 240
-}
-// timeは秒
-function getDivisionRecur(time: number, doneTime: number, gimmicks: TimingInfo[], y: number, bpm: number): number {
-  const newDivision = y + getDivFromTime((time - doneTime), bpm)
-  if (gimmicks.length === 0) {
-    return newDivision
-  }
-  const gimmick = gimmicks[0]
-  if (newDivision < gimmick.division) {
-    return newDivision
-  }
-
-  // ここに来る時点でgimmickの影響は受ける
-  if (gimmick.type === "stop") {
-    doneTime += getTimeFromDiv((gimmick.division - y), bpm) // stopに至るまでに必要な時間
-    doneTime += gimmick.value // stopで消費される時間
-    if (time < doneTime) { // stopの最中
-      return gimmick.division
-    } else {
-      return getDivisionRecur(time, doneTime, gimmicks.slice(1), gimmick.division, bpm)
-    }
-  } else { // soflan
-    doneTime += getTimeFromDiv((gimmick.division - y), bpm)
-    return getDivisionRecur(time, doneTime, gimmicks.slice(1), gimmick.division, gimmick.value)
-  }
-}
-
-// timeは秒
-function getDivision(time: number, gimmicks: TimingInfo[]): number {
-  // todo: 最初がstopだとバグる
-  const bpm = gimmicks[0].value
-  const ret = getDivisionRecur(time, 0, gimmicks.slice(1), 0, bpm)
-  return ret
-}
 
 // timeは秒
 function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number): number {
