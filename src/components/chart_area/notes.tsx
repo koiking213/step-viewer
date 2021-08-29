@@ -38,7 +38,6 @@ export function FreezeArrow({ dir, y, length, arrowSize }: FreezeArrowProps) {
   const endWidth = 64;
   const pureArrowHeight = 36;
   const endTextureLength = Math.min(endWidth, pureArrowHeight+length*(endWidth/arrowSize));
-  //const endTextureLength = endWidth
   const endOffset = (endWidth - endTextureLength) / (endWidth/arrowSize);
   const endTexture = new Texture(new BaseTexture(`/skin/${dir}_freeze_end.png`), new Rectangle(0, endHeight-endTextureLength, endWidth, endTextureLength));
   const end = 
