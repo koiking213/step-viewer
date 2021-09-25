@@ -392,6 +392,9 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   useEffect(() => {
     console.log("chart area updated");
   }, []);
+  useEffect(() => {
+    setPlaying(false);
+  }, [audio]);
   return (
     <Grid container direction="row" alignItems="center" justifyContent="center">
       <Grid item xs={3}>
