@@ -6,7 +6,7 @@ import {
   useTick,
   Text,
 } from "@inlet/react-pixi";
-import { settings, SCALE_MODES } from "pixi.js";
+import { settings, SCALE_MODES, Texture, BaseTexture, Rectangle } from "pixi.js";
 import { Stream, Gimmick, Stop, Soflan, TimingInfo } from "../types/index";
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
@@ -135,6 +135,16 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
   );
 }
 
+function getNoteTextures(): { [key: string]: Texture } {
+    const dict: {[name: string]: Texture} = {};
+    ["red", "blue", "yellow", "green"].map(color => {
+      ["left", "down", "up", "right"].map(direction => {
+        dict[`${direction}_${color}`] = new Texture(new BaseTexture(`/skin/${direction}_${color}.png`), new Rectangle(0, 0, 64, 64));
+      })
+    });
+    return dict;
+}
+
 type CanvasProps = { stream: Stream, highSpeed: number };
 const Canvas = ({ stream, highSpeed }: CanvasProps) => {
   useEffect(() => {
@@ -142,6 +152,7 @@ const Canvas = ({ stream, highSpeed }: CanvasProps) => {
   }, []);
   const arrowOffsetScale = arrowSize * highSpeed * arrowPosEpsilon;
   const initialNoteOfs = 0
+  const noteTextures = getNoteTextures();
   const arrows = stream.stream
     .map((division) => {
       return division.arrows.map((arrow) => {
@@ -155,7 +166,7 @@ const Canvas = ({ stream, highSpeed }: CanvasProps) => {
           return <Mine dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>;
         } else {
           return (
-            <Arrow dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>
+            <Arrow dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
           );
         }
       });

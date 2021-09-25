@@ -13,7 +13,6 @@ function dir2lane(dir: Direction): number {
   }
 }
 
-
 type FreezeArrowProps = { dir: Direction; y: number; length: number; arrowSize: number };
 export function FreezeArrow({ dir, y, length, arrowSize }: FreezeArrowProps) {
   const x = dir2lane(dir) * arrowSize;
@@ -59,13 +58,14 @@ export const Mine = ({ dir, y, arrowSize }: MineProps) => {
   return <Sprite image={`/skin/${dir}_mine.png`} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
 };
 
-type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number };
-export const Arrow = ({ dir, color, y, arrowSize }: ArrowProps) => {
+type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture} };
+export const Arrow = ({ dir, color, y, arrowSize, noteTextures }: ArrowProps) => {
   useEffect(() => {
     //console.log(key)
   }, []);
   const key = `arrow-${dir}-${y}-${color}`;
   const x = dir2lane(dir) * arrowSize;
-  return <Sprite image={`/skin/${dir}_${color}.png`} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
+  //const texture = new Texture(new BaseTexture(`/skin/${dir}_${color}.png`), new Rectangle(0,0,64,64));
+  return <Sprite texture={noteTextures[`${dir}_${color}`]} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
 };
 
