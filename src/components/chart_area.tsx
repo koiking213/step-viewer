@@ -255,9 +255,15 @@ const StepZone = () => {
   )
 }
 
-type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any };
-const Player = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio }: PlayerProps) => {
+// TODO: Playerが再生/停止ボタンも持つべき?
+type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any };
+const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
+  useEffect(() => {
+    if (scrollValue === 0) {
+      setPlaying(false);
+    }
+  }, [scrollValue, setPlaying]);
   return (
     <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
       <Stage width={canvasWidth} height={500}>
@@ -410,6 +416,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
           metronome={metronome}
           stream={stream}
           highSpeed={highSpeed}
+          setPlaying={setPlaying}
         />
       </Grid>
       <Grid item xs={4}>
