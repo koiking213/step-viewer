@@ -9,7 +9,7 @@ export const VolumeControl = ({audio}:Props) => {
         const [value, setValue] = useState(50);
         useEffect(() => {
             audio.volume = value / 100;
-        }, [audio]);
+        }, [audio, value]);
 
         const handleChange = (event: any, value: any) => {
                 setValue(value);
