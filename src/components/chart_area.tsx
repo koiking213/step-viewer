@@ -3,6 +3,7 @@ import {
   Stage,
   Container,
   Sprite,
+  AnimatedSprite,
   useTick,
   Text,
 } from "@inlet/react-pixi";
@@ -135,18 +136,22 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
   );
 }
 
-function getNoteTextures(): { [key: string]: Texture } {
-    const dict: {[name: string]: Texture} = {};
+function getNoteTextures(): { [key: string]: Texture[] } {
+    const dict: {[name: string]: Texture[]} = {};
     ["red", "blue", "yellow", "green"].map(color => {
       ["left", "down", "up", "right"].map(direction => {
-        dict[`${direction}_${color}`] = new Texture(new BaseTexture(`/skin/${direction}_${color}.png`), new Rectangle(0, 0, 64, 64));
+        // TODO: directionとcolorはtypesから取るようにする
+        const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
+        dict[`${direction}_${color}`] = Array.from(Array(8), (v,k) => 
+          new Texture(new BaseTexture(`/skin/arrows.png`), new Rectangle(k*64, y, 64, 64))
+        )
       })
     });
     return dict;
 }
 
-type CanvasProps = { stream: Stream, highSpeed: number };
-const Canvas = ({ stream, highSpeed }: CanvasProps) => {
+type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean };
+const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
   useEffect(() => {
     console.log("canvas updated");
   }, []);
@@ -166,7 +171,7 @@ const Canvas = ({ stream, highSpeed }: CanvasProps) => {
           return <Mine dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>;
         } else {
           return (
-            <Arrow dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
+            <Arrow playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
           );
         }
       });
@@ -256,6 +261,7 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
 }
 
 const StepZone = () => {
+  const noteTextures = getNoteTextures();
   return (
     <Container>
       <Sprite image={`/skin/left_stepzone.png`} x={canvasLeftSpace} y={0} height={arrowSize} width={arrowSize} />
@@ -403,11 +409,11 @@ type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffse
 const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [highSpeed, setHighSpeed] = useState(1.0);
+  const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const key = JSON.stringify(stream) + highSpeed.toString();
-  const canvas = <Canvas stream={stream} highSpeed={highSpeed} key={key} />;
+  const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
-  const [playing, setPlaying] = useState(false);
   const clap = new Audio('/Clap-1.wav');
   const metronome = new Audio('/metronome.ogg');
   useEffect(() => {

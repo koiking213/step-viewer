@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { Color, Direction } from "../../types/index";
-import { Container, Sprite } from "@inlet/react-pixi";
+import { Container, Sprite, AnimatedSprite } from "@inlet/react-pixi";
 import { Texture, BaseTexture, Rectangle } from "pixi.js";
 
 function dir2lane(dir: Direction): number {
@@ -58,14 +58,15 @@ export const Mine = ({ dir, y, arrowSize }: MineProps) => {
   return <Sprite image={`/skin/${dir}_mine.png`} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
 };
 
-type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture} };
-export const Arrow = ({ dir, color, y, arrowSize, noteTextures }: ArrowProps) => {
+type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean };
+export const Arrow = ({ dir, color, y, arrowSize, noteTextures, playing }: ArrowProps) => {
   useEffect(() => {
     //console.log(key)
   }, []);
   const key = `arrow-${dir}-${y}-${color}`;
   const x = dir2lane(dir) * arrowSize;
   //const texture = new Texture(new BaseTexture(`/skin/${dir}_${color}.png`), new Rectangle(0,0,64,64));
-  return <Sprite texture={noteTextures[`${dir}_${color}`]} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
+  const rot = dir === "left" ? 90 : dir === "down" ? 0 : dir === "up" ? 180 : 270;
+  return <AnimatedSprite anchor={0.5} angle={rot} isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_${color}`]} x={x+arrowSize/2} y={y} height={arrowSize} width={arrowSize} key={key}/>;
 };
 
