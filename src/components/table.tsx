@@ -1,6 +1,6 @@
 import React from "react"
 import { Song } from '../types/index'
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 
 type SongTableProps = {songs: Song[], setSong:(title: string, dirName: string, difficulty: string, musicPath: string, musicOffset: number) => void}
 export const SongTable = ({songs, setSong}: SongTableProps) => {
@@ -8,47 +8,60 @@ export const SongTable = ({songs, setSong}: SongTableProps) => {
     {
       field: "title",
       headerName: "Title",
-      width: 300,
+      width: 250,
     },
     {
       field: "difficulty",
       headerName: "Difficulty",
-      width: 150,
+      width: 120,
     },
     {
       field: "level",
       headerName: "Level",
-      width: 120,
+      width: 100,
+      type: "number",
     },
     {
       field: "combo",
       headerName: "Combo",
-      width: 150,
+      width: 110,
+      type: "number",
     },
     {
       field: "bpm",
       headerName: "BPM",
-      width: 150,
+      width: 100,
+      type: "number",
     },
     {
       field: "stream",
       headerName: "STR",
+      width: 90,
+      type: "number",
     },
     {
       field: "voltage",
       headerName: "VOL",
+      width: 90,
+      type: "number",
     },
     {
       field: "air",
       headerName: "AIR",
+      width: 90,
+      type: "number",
     },
     {
       field: "freeze",
       headerName: "FRE",
+      width: 90,
+      type: "number",
     },
     {
       field: "chaos",
       headerName: "CHA",
+      width: 90,
+      type: "number",
     },
   ]
   const rows = React.useMemo (() => 
@@ -77,10 +90,14 @@ export const SongTable = ({songs, setSong}: SongTableProps) => {
       <DataGrid
         rows={rows}
         columns={columns}
+        disableColumnMenu={true}
         onRowClick={(params, _event, _details) => {
           console.log(params)
           const row = params.row
           setSong(row.title, row.dir_name, row.difficulty, row.music_path, row.music_offset)
+        }}
+        components={{
+          Toolbar: GridToolbar,
         }}
       />
     </div>
