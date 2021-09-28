@@ -3,10 +3,11 @@ import {
   Stage,
   Container,
   Sprite,
+  AnimatedSprite,
   useTick,
   Text,
 } from "@inlet/react-pixi";
-import { settings, SCALE_MODES } from "pixi.js";
+import { settings, SCALE_MODES, Texture, BaseTexture, Rectangle } from "pixi.js";
 import { Stream, Gimmick, Stop, Soflan, TimingInfo } from "../types/index";
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
@@ -135,13 +136,33 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
   );
 }
 
-type CanvasProps = { stream: Stream, highSpeed: number };
-const Canvas = ({ stream, highSpeed }: CanvasProps) => {
+function getNoteTextures(): { [key: string]: Texture[] } {
+    const dict: {[name: string]: Texture[]} = {};
+    ["red", "blue", "yellow", "green"].map(color => {
+      ["left", "down", "up", "right"].map(direction => {
+        // TODO: directionとcolorはtypesから取るようにする
+        const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
+        dict[`${direction}_${color}`] = Array.from(Array(8), (v,k) => 
+          new Texture(new BaseTexture(`/skin/arrows.png`), new Rectangle(k*64, y, 64, 64))
+        )
+      })
+    });
+    ["left", "down", "up", "right"].map(direction => {
+      dict[`${direction}_mine`] = Array.from(Array(8), (v,k) => 
+        new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k*64, 0, 64, 64))
+      )
+    })
+    return dict;
+}
+
+type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean };
+const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
   useEffect(() => {
     console.log("canvas updated");
   }, []);
   const arrowOffsetScale = arrowSize * highSpeed * arrowPosEpsilon;
   const initialNoteOfs = 0
+  const noteTextures = getNoteTextures();
   const arrows = stream.stream
     .map((division) => {
       return division.arrows.map((arrow) => {
@@ -152,10 +173,10 @@ const Canvas = ({ stream, highSpeed }: CanvasProps) => {
             <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>
           );
         } else if (arrow.type === "mine") {
-          return <Mine dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>;
+          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures}/>;
         } else {
           return (
-            <Arrow dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>
+            <Arrow playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
           );
         }
       });
@@ -245,6 +266,7 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
 }
 
 const StepZone = () => {
+  const noteTextures = getNoteTextures();
   return (
     <Container>
       <Sprite image={`/skin/left_stepzone.png`} x={canvasLeftSpace} y={0} height={arrowSize} width={arrowSize} />
@@ -392,11 +414,11 @@ type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffse
 const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [highSpeed, setHighSpeed] = useState(1.0);
+  const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const key = JSON.stringify(stream) + highSpeed.toString();
-  const canvas = <Canvas stream={stream} highSpeed={highSpeed} key={key} />;
+  const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
-  const [playing, setPlaying] = useState(false);
   const clap = new Audio('/Clap-1.wav');
   const metronome = new Audio('/metronome.ogg');
   useEffect(() => {
