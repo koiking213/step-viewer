@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Stage,
   Container,
@@ -166,7 +166,9 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
   }, []);
   const arrowOffsetScale = arrowSize * highSpeed * arrowPosEpsilon;
   const initialNoteOfs = 0
-  const noteTextures = getNoteTextures();
+  const noteTextures = useMemo(() => {
+    return getNoteTextures();
+  }, []);
   const arrows = stream.stream
     .map((division) => {
       return division.arrows.map((arrow) => {
