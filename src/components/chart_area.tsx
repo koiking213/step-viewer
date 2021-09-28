@@ -32,7 +32,7 @@ import { getDivision } from './chart_area/get_division';
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
 
-const arrowSize = 32;
+const arrowSize = 64;
 const canvasLeftSpace = 30;
 const canvasRightSpace = 80;
 const canvasWidth = arrowSize * 4 + canvasLeftSpace + canvasRightSpace;
@@ -266,6 +266,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   }, [scrollValue, setPlaying]);
   return (
     <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
+      <Grid item xs={8}>
       <Stage width={canvasWidth} height={500}>
         <StepZone />
         <Window
@@ -282,9 +283,12 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
           setScrollValue={setScrollValue}
         />
       </Stage>
+    </Grid>
+      <Grid item xs={1}>
       <Box sx={{ height: 500 }}>
         <ChartSlider audio={audio} scrollValue={scrollValue} setScrollValue={setScrollValue} />
       </Box>
+    </Grid>
     </Grid>
   )
 }
@@ -337,7 +341,7 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
 type SettingAreaProps = { setGimmickViewer: (val: GimmickViewer) => void, highSpeed: number, setHighSpeed: (highSpeed: number) => void, audio: HTMLAudioElement, clap: HTMLAudioElement, metronome: HTMLAudioElement, playing: boolean, setPlaying: (playing: boolean) => void };
 const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying }: SettingAreaProps) => {
   return (
-    <div>
+    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
       <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
         <IconButton onClick={() => {
@@ -380,7 +384,7 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
         </Grid>
       </Grid>
       <GimmickViewerSelect setValue={setGimmickViewer} />
-    </div>
+    </Grid>
   )
 }
 
@@ -403,7 +407,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   }, [audio]);
   return (
     <Grid container direction="row" alignItems="center" justifyContent="center">
-      <Grid item xs={3}>
+      <Grid item xs={5}>
         <Player
           canvas={canvas}
           canvasMetaInfo={canvasMetaInfo}
