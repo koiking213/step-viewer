@@ -8,7 +8,7 @@ import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
 import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
-import SongTable from './components/table'
+import {SongTable} from './components/table'
 import ChartArea from './components/chart_area'
 
 function downloadFromDropbox(filepath: string, successCallback: (blob: any) => void) {
@@ -85,7 +85,7 @@ function App() {
           <SongInfo title={title} difficulty={difficulty} />
           <Loading />
         </Box>
-        <SongTable key={audio.src} songs={songs} setSong={setSong}
+        <SongTable songs={songs} setSong={setSong}
         />
       </Box>
     </Container>
