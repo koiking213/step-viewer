@@ -21,6 +21,8 @@ import { VolumeControl } from './volume_control';
 import { DivisionLine } from './chart_area/division_line'
 import { Slider } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 
 
 import Radio from '@material-ui/core/Radio';
@@ -29,6 +31,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import { getDivision } from './chart_area/get_division';
+import ButtonGroup from "@mui/material/ButtonGroup";
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -257,9 +260,15 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
   return (
     <div>
       <Grid container direction="row" justifyContent="center" alignItems="center">
-        <Button variant="contained" onClick={() => { setHighSpeed(highSpeed - 0.25) }}>-</Button>
         <div>High Speed: {highSpeed.toFixed(2)}</div>
-        <Button variant="contained" onClick={() => { setHighSpeed(highSpeed + 0.25) }}>+</Button>
+        <ButtonGroup>
+          <IconButton onClick={() => { setHighSpeed(highSpeed - 0.25) }}>
+            <RemoveIcon />
+          </IconButton>
+          <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
+            <AddIcon />
+          </IconButton>
+        </ButtonGroup>
       </Grid>
     </div>
   )
