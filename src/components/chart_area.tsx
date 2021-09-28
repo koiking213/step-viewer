@@ -26,6 +26,8 @@ import RemoveIcon from '@material-ui/icons/Remove';
 import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
 import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
 
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
@@ -388,36 +390,49 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
 type SettingAreaProps = { setGimmickViewer: (val: GimmickViewer) => void, highSpeed: number, setHighSpeed: (highSpeed: number) => void, audio: HTMLAudioElement, clap: HTMLAudioElement, metronome: HTMLAudioElement, playing: boolean, setPlaying: (playing: boolean) => void };
 const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying }: SettingAreaProps) => {
   return (
-    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
-      <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
+    <Grid container direction="column" spacing={2} >
+      <Card variant="outlined">
+        <CardContent>
+          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
+        </CardContent>
+      </Card>
 
-      <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
-        <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-          <Grid item xs={3}>
-            audio:
+      <Card variant="outlined">
+        <CardContent>
+          <Grid container direction="column" columnSpacing={1} >
+            <Grid container direction="row" columnSpacing={1} >
+              <Grid item xs={3}>
+                audio:
+              </Grid>
+              <Grid item xs={3}>
+                <VolumeControl audio={audio} />
+              </Grid>
+            </Grid>
+            <Grid container direction="row" columnSpacing={1}>
+              <Grid item xs={3}>
+                hand clap:
+              </Grid>
+              <Grid item xs={3}>
+                <VolumeControl audio={clap} />
+              </Grid>
+            </Grid>
+            <Grid container direction="row" columnSpacing={1}>
+              <Grid item xs={3}>
+                metronome:
+              </Grid>
+              <Grid item xs={3}>
+                <VolumeControl audio={metronome} />
+              </Grid>
+            </Grid>
           </Grid>
-          <Grid item xs={3}>
-            <VolumeControl audio={audio} />
-          </Grid>
-        </Grid>
-        <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-          <Grid item xs={3}>
-            hand clap:
-          </Grid>
-          <Grid item xs={3}>
-            <VolumeControl audio={clap} />
-          </Grid>
-        </Grid>
-        <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-          <Grid item xs={3}>
-            metronome:
-          </Grid>
-          <Grid item xs={3}>
-            <VolumeControl audio={metronome} />
-          </Grid>
-        </Grid>
-      </Grid>
-      <GimmickViewerSelect setValue={setGimmickViewer} />
+        </CardContent>
+      </Card>
+      <Card variant="outlined">
+        <CardContent>
+          <GimmickViewerSelect setValue={setGimmickViewer} />
+        </CardContent>
+      </Card>
+
     </Grid>
   )
 }
