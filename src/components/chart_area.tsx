@@ -23,6 +23,8 @@ import { Slider } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
+import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
 
 
 import Radio from '@material-ui/core/Radio';
@@ -140,22 +142,22 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
 }
 
 function getNoteTextures(): { [key: string]: Texture[] } {
-    const dict: {[name: string]: Texture[]} = {};
-    ["red", "blue", "yellow", "green"].map(color => {
-      ["left", "down", "up", "right"].map(direction => {
-        // TODO: directionとcolorはtypesから取るようにする
-        const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
-        dict[`${direction}_${color}`] = Array.from(Array(8), (v,k) => 
-          new Texture(new BaseTexture(`/skin/arrows.png`), new Rectangle(k*64, y, 64, 64))
-        )
-      })
-    });
+  const dict: { [name: string]: Texture[] } = {};
+  ["red", "blue", "yellow", "green"].map(color => {
     ["left", "down", "up", "right"].map(direction => {
-      dict[`${direction}_mine`] = Array.from(Array(8), (v,k) => 
-        new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k*64, 0, 64, 64))
+      // TODO: directionとcolorはtypesから取るようにする
+      const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
+      dict[`${direction}_${color}`] = Array.from(Array(8), (v, k) =>
+        new Texture(new BaseTexture(`/skin/arrows.png`), new Rectangle(k * 64, y, 64, 64))
       )
     })
-    return dict;
+  });
+  ["left", "down", "up", "right"].map(direction => {
+    dict[`${direction}_mine`] = Array.from(Array(8), (v, k) =>
+      new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k * 64, 0, 64, 64))
+    )
+  })
+  return dict;
 }
 
 type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean };
@@ -173,10 +175,10 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
         if (arrow.type === "freeze") {
           const length = (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>
+            <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures}/>;
+          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
         } else {
           return (
             <Arrow playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
@@ -261,14 +263,12 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
     <div>
       <Grid container direction="row" justifyContent="center" alignItems="center">
         <div>High Speed: {highSpeed.toFixed(2)}</div>
-        <ButtonGroup>
-          <IconButton onClick={() => { setHighSpeed(highSpeed - 0.25) }}>
-            <RemoveIcon />
-          </IconButton>
-          <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
-            <AddIcon />
-          </IconButton>
-        </ButtonGroup>
+        <IconButton onClick={() => { setHighSpeed(highSpeed - 0.25) }}>
+          <RemoveIcon />
+        </IconButton>
+        <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
+          <AddIcon />
+        </IconButton>
       </Grid>
     </div>
   )
@@ -296,30 +296,46 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
     }
   }, [scrollValue, setPlaying]);
   return (
-    <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-      <Grid item xs={8}>
-      <Stage width={canvasWidth} height={500}>
-        <StepZone />
-        <Window
-          canvas={canvas}
-          canvasMetaInfo={canvasMetaInfo}
-          audio={audio}
-          playing={playing}
-          gimmicks={gimmicks}
-          chartOffset={chartOffset}
-          clap={clap}
-          metronome={metronome}
-          stream={stream}
-          highSpeed={highSpeed}
-          setScrollValue={setScrollValue}
-        />
-      </Stage>
-    </Grid>
-      <Grid item xs={1}>
-      <Box sx={{ height: 500 }}>
-        <ChartSlider audio={audio} scrollValue={scrollValue} setScrollValue={setScrollValue} />
-      </Box>
-    </Grid>
+    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
+      <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
+        <Grid item xs={8}>
+          <Stage width={canvasWidth} height={500}>
+            <StepZone />
+            <Window
+              canvas={canvas}
+              canvasMetaInfo={canvasMetaInfo}
+              audio={audio}
+              playing={playing}
+              gimmicks={gimmicks}
+              chartOffset={chartOffset}
+              clap={clap}
+              metronome={metronome}
+              stream={stream}
+              highSpeed={highSpeed}
+              setScrollValue={setScrollValue}
+            />
+          </Stage>
+        </Grid>
+        <Grid item xs={1}>
+          <Box sx={{ height: 500 }}>
+            <ChartSlider audio={audio} scrollValue={scrollValue} setScrollValue={setScrollValue} />
+          </Box>
+        </Grid>
+      </Grid>
+      <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
+        <IconButton onClick={() => {
+          if (playing) {
+            setPlaying(false); audio.pause();
+          } else {
+            setPlaying(true); audio.play();
+          }
+        }}>
+          {playing ? <PauseCircleOutlineRoundedIcon fontSize="large" /> : <PlayCircleOutlineRoundedIcon fontSize="large" />}
+        </IconButton>
+        <IconButton onClick={() => { audio.currentTime = 0; setPlaying(true); audio.play(); }}>
+          <ReplayIcon fontSize="large" />
+        </IconButton>
+      </Grid>
     </Grid>
   )
 }
@@ -374,20 +390,7 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
   return (
     <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
       <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
-      <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-        <IconButton onClick={() => {
-          if (playing) {
-            setPlaying(false); audio.pause();
-          } else {
-            setPlaying(true); audio.play();
-          }
-        }}>
-          {playing ? <PauseIcon /> : <PlayArrowIcon />}
-        </IconButton>
-        <IconButton onClick={() => { audio.currentTime = 0; }}>
-          <ReplayIcon />
-        </IconButton>
-      </Grid>
+
       <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
         <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
           <Grid item xs={3}>
