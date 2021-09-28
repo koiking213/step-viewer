@@ -2,7 +2,7 @@ import './App.css';
 
 import songs from './songs.json'
 import { useState } from "react"
-import { Stream, Gimmick } from './types/index'
+import { Stream, Gimmick, Song, Chart } from './types/index'
 import { accessToken } from './token'
 import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
@@ -10,6 +10,29 @@ import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import {SongTable} from './components/table'
 import ChartArea from './components/chart_area'
+
+const emptySong: Song = {
+  title: "",
+  dir_name: "",
+  charts: [],
+  bpm: 0,
+  music: {
+    path: "",
+    offset: 0
+  }
+}
+
+const emptyChart: Chart = {
+  difficulty: "",
+  level: 0,
+  max_combo: 0,
+  stream: 0,
+  voltage: 0,
+  air: 0,
+  freeze: 0,
+  chaos: 0
+}
+
 
 function downloadFromDropbox(filepath: string, successCallback: (blob: any) => void) {
   const dbx = new Dropbox({ accessToken: accessToken });
@@ -48,9 +71,9 @@ function getSong(filepath: string, setter: (song: Stream) => void) {
   })
 };
 
-type SongInfoProps = { title: string, difficulty: string };
-const SongInfo = ({ title, difficulty }: SongInfoProps) => {
-  return <div>{`${title} (${difficulty})`}</div>
+type SongInfoProps = { song: Song, chart: Chart};
+const SongInfo = ({ song, chart }: SongInfoProps) => {
+  return (song == emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
 }
 
 
@@ -61,31 +84,29 @@ function App() {
   const [stream, setStream] = useState(emptyStream)
   const [gimmick, setGimmick] = useState(emptyGimmick)
   const [audio, setAudio] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
-  const [chartOffset, setChartOffset] = useState(0)
-  const [title, setTitle] = useState('title')
-  const [difficulty, setDifficulty] = useState('difficulty')
   const [isLoading, setIsLoading] = useState(false)
+  const [song, setSong] = useState(emptySong)
+  const [chart, setChart] = useState(emptyChart)
 
-  function setSong(title: string, dirName: string, difficulty: string, musicPath: string, musicOffset: number): void {
+  function setChartInfo(song: Song, chart: Chart): void {
     audio.pause()
     setIsLoading(true)
-    getSong(`/${dirName}/${difficulty}.json`, setStream)
-    getGimmick(`/${dirName}/gimmick.json`, setGimmick)
-    getAudio(`/${dirName}/${musicPath}`, setAudio, setIsLoading)
-    setChartOffset(musicOffset)
-    setTitle(title)
-    setDifficulty(difficulty)
+    getSong(`/${song.dir_name}/${chart.difficulty}.json`, setStream)
+    getGimmick(`/${song.dir_name}/gimmick.json`, setGimmick)
+    getAudio(`/${song.dir_name}/${song.music.path}`, setAudio, setIsLoading)
+    setSong(song)
+    setChart(chart)
   }
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={chartOffset} />
+        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} />
         <Box display="flex" justifyContent="center" m={1}>
-          <SongInfo title={title} difficulty={difficulty} />
+          <SongInfo song={song} chart={chart} />
           <Loading />
         </Box>
-        <SongTable songs={songs} setSong={setSong}
+        <SongTable songs={songs} setChartInfo={setChartInfo}
         />
       </Box>
     </Container>
