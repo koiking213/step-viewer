@@ -228,11 +228,16 @@ function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
   return ret;
 }
 
-type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void };
-const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue }: WindowProps) => {
+function getBPM(division: number, gimmicks: TimingInfo[]): number {
+  if (gimmicks.length === 1) return gimmicks[0].value;
+  if (gimmicks[1].division > division) return gimmicks[0].value;
+  else return getBPM(division, gimmicks.slice(1));
+}
+
+type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void};
+const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue, setBPM }: WindowProps) => {
   const [time, setTime] = useState(0);
   useTick((delta) => {
-
     const newTime = audio.currentTime
     const prevDivision = getDivision(time + chartOffset + 0.08, gimmicks);
     const prevArrows = getPassedArrows(prevDivision, stream);
@@ -249,6 +254,9 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
     }
     // なんか結果的にこれでaudio.currentTimeがNaNの場合も吸収するけど流石にこのままは良くないのでNaNとかしたい
     const newVal = audio.currentTime === 0 ? 100 : Math.ceil(100 - audio.currentTime / audio.duration * 100)
+    setBPM(getBPM(currentDivision, gimmicks.filter(g => g.type === 'soflan')));
+    //const bpm = getBPM(currentDivision, gimmicks.filter(g => g.type === 'soflan'));
+    //console.log(bpm)
     setScrollValue(newVal)
   });
   return (
@@ -288,10 +296,10 @@ const StepZone = () => {
   )
 }
 
-// TODO: Playerが再生/停止ボタンも持つべき?
 type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any };
 const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
+  const [bpm, setBPM] = useState(0);
   useEffect(() => {
     if (scrollValue === 0) {
       setPlaying(false);
@@ -299,6 +307,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   }, [scrollValue, setPlaying]);
   return (
     <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
+      {`BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
         <Grid item xs={8}>
           <Stage width={canvasWidth} height={500}>
@@ -315,6 +324,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
               stream={stream}
               highSpeed={highSpeed}
               setScrollValue={setScrollValue}
+              setBPM={setBPM}
             />
           </Stage>
         </Grid>
@@ -437,7 +447,7 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number };
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number};
 const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [highSpeed, setHighSpeed] = useState(1.0);
