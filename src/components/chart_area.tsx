@@ -117,9 +117,6 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
     const y = k * arrowSize * 4 * highSpeed + arrowSize / 2;
     return <DivisionLine y={y} division={k} arrowSize={arrowSize} divisionNumSpace={canvasLeftSpace} key={k} />
   })
-  useEffect(() => {
-    console.log("gimmickViewer:", gimmickViewer);
-  }, [gimmickViewer]);
   const Soflan = () => {
     switch (gimmickViewer) {
       case "detail": return (<SoflanDetail soflans={gimmick.soflan} highSpeed={highSpeed} />);
@@ -248,6 +245,9 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
       clap.currentTime = 0;
       clap.play();
     }
+    if (delta > 2) {
+      console.log(delta)
+    }
     if (playing && Math.floor(prevDivision * 4) < Math.floor(currentDivision * 4)) {
       metronome.currentTime = 0;
       metronome.play();
@@ -255,8 +255,6 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
     // なんか結果的にこれでaudio.currentTimeがNaNの場合も吸収するけど流石にこのままは良くないのでNaNとかしたい
     const newVal = audio.currentTime === 0 ? 100 : Math.ceil(100 - audio.currentTime / audio.duration * 100)
     setBPM(getBPM(currentDivision, gimmicks.filter(g => g.type === 'soflan')));
-    //const bpm = getBPM(currentDivision, gimmicks.filter(g => g.type === 'soflan'));
-    //console.log(bpm)
     setScrollValue(newVal)
   });
   return (
