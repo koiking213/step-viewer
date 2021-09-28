@@ -51,11 +51,11 @@ export function FreezeArrow({ dir, y, length, arrowSize }: FreezeArrowProps) {
   );
 }
 
-type MineProps = { dir: Direction; y: number; arrowSize: number };
-export const Mine = ({ dir, y, arrowSize }: MineProps) => {
+type MineProps = { dir: Direction; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean };
+export const Mine = ({ dir, y, arrowSize, noteTextures, playing }: MineProps) => {
   const key = `mine-${dir}-${y}`;
   const x = dir2lane(dir) * arrowSize;
-  return <Sprite image={`/skin/${dir}_mine.png`} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
+  return <AnimatedSprite isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_mine`]} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
 };
 
 type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean };
@@ -65,8 +65,7 @@ export const Arrow = ({ dir, color, y, arrowSize, noteTextures, playing }: Arrow
   }, []);
   const key = `arrow-${dir}-${y}-${color}`;
   const x = dir2lane(dir) * arrowSize;
-  //const texture = new Texture(new BaseTexture(`/skin/${dir}_${color}.png`), new Rectangle(0,0,64,64));
   const rot = dir === "left" ? 90 : dir === "down" ? 0 : dir === "up" ? 180 : 270;
-  return <AnimatedSprite anchor={0.5} angle={rot} isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_${color}`]} x={x+arrowSize/2} y={y} height={arrowSize} width={arrowSize} key={key}/>;
+  return <AnimatedSprite anchor={0.5} angle={rot} isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_${color}`]} x={x+arrowSize/2} y={y+arrowSize/2} height={arrowSize} width={arrowSize} key={key}/>;
 };
 

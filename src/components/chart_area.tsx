@@ -147,6 +147,11 @@ function getNoteTextures(): { [key: string]: Texture[] } {
         )
       })
     });
+    ["left", "down", "up", "right"].map(direction => {
+      dict[`${direction}_mine`] = Array.from(Array(8), (v,k) => 
+        new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k*64, 0, 64, 64))
+      )
+    })
     return dict;
 }
 
@@ -168,7 +173,7 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
             <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>
           );
         } else if (arrow.type === "mine") {
-          return <Mine dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>;
+          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures}/>;
         } else {
           return (
             <Arrow playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
