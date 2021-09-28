@@ -473,7 +473,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
           audio={audio}
           playing={playing}
           gimmicks={sortedTimingInfo}
-          key={key}
+          key={JSON.stringify(stream)}
           chartOffset={chartOffset}
           clap={clap}
           metronome={metronome}
