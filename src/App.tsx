@@ -1,9 +1,7 @@
 import './App.css';
 
-import songs from './songs.json'
-import { useState } from "react"
-import { Stream, Gimmick } from './types/index'
-import { accessToken } from './token'
+import { useEffect, useState } from "react"
+import { Stream, Gimmick, Song } from './types/index'
 import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
 import Container from '@material-ui/core/Container';
@@ -12,7 +10,7 @@ import {SongTable} from './components/table'
 import ChartArea from './components/chart_area'
 
 function downloadFromDropbox(filepath: string, successCallback: (blob: any) => void) {
-  const dbx = new Dropbox({ accessToken: accessToken });
+  const dbx = new Dropbox({ accessToken: process.env.REACT_APP_DROPBOX_TOKEN });
   dbx.filesDownload({ path: filepath })
     .then((response) => {
       successCallback((response.result as any).fileBlob)
@@ -53,8 +51,6 @@ const SongInfo = ({ title, difficulty }: SongInfoProps) => {
   return <div>{`${title} (${difficulty})`}</div>
 }
 
-
-
 function App() {
   const emptyStream: Stream = JSON.parse('{"stream":[], "cost":-1}');
   const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
@@ -65,6 +61,7 @@ function App() {
   const [title, setTitle] = useState('title')
   const [difficulty, setDifficulty] = useState('difficulty')
   const [isLoading, setIsLoading] = useState(false)
+  const [songs, setSongs] = useState<Song[]>([])
 
   function setSong(title: string, dirName: string, difficulty: string, musicPath: string, musicOffset: number): void {
     audio.pause()
@@ -76,6 +73,16 @@ function App() {
     setTitle(title)
     setDifficulty(difficulty)
   }
+  useEffect(() => {
+    setIsLoading(true)
+    downloadFromDropbox("/songs.json", (blob) => {
+      blob.text().then((text: string) => {
+        const songs: Song[] = JSON.parse(text)
+        setSongs(songs)
+        setIsLoading(false)
+      })
+    })
+  }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
   return (
     <Container>
