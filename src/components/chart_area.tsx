@@ -22,7 +22,6 @@ import { DivisionLine } from './chart_area/division_line'
 import { Slider } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 
-
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -282,6 +281,9 @@ type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: 
 const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
   useEffect(() => {
+    console.log("player updated")
+  }, []);
+  useEffect(() => {
     if (scrollValue === 0) {
       setPlaying(false);
     }
@@ -410,8 +412,8 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number };
-const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement };
+const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [highSpeed, setHighSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
@@ -419,8 +421,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   const key = JSON.stringify(stream) + highSpeed.toString();
   const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
-  const clap = new Audio('/Clap-1.wav');
-  const metronome = new Audio('/metronome.ogg');
   useEffect(() => {
     console.log("chart area updated");
   }, []);

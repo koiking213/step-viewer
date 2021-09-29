@@ -57,6 +57,8 @@ function App() {
   const [stream, setStream] = useState(emptyStream)
   const [gimmick, setGimmick] = useState(emptyGimmick)
   const [audio, setAudio] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
+  const [clap, setClap] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
+  const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [chartOffset, setChartOffset] = useState(0)
   const [title, setTitle] = useState('title')
   const [difficulty, setDifficulty] = useState('difficulty')
@@ -75,6 +77,8 @@ function App() {
   }
   useEffect(() => {
     setIsLoading(true)
+    getAudio("/Clap-1.wav", setClap, setIsLoading)
+    getAudio("/metronome.ogg", setMetronome, setIsLoading)
     downloadFromDropbox("/songs.json", (blob) => {
       blob.text().then((text: string) => {
         const songs: Song[] = JSON.parse(text)
@@ -87,7 +91,7 @@ function App() {
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={chartOffset} />
+        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={chartOffset} clap={clap} metronome={metronome} />
         <Box display="flex" justifyContent="center" m={1}>
           <SongInfo title={title} difficulty={difficulty} />
           <Loading />
