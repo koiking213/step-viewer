@@ -1,9 +1,9 @@
 import React from "react"
-import { Song } from '../types/index'
+import { Song, Chart } from '../types/index'
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 
-type SongTableProps = {songs: Song[], setSong:(title: string, dirName: string, difficulty: string, musicPath: string, musicOffset: number) => void}
-export const SongTable = ({songs, setSong}: SongTableProps) => {
+type SongTableProps = {songs: Song[], setChartInfo:(song: Song, chart: Chart) => void}
+export const SongTable = ({songs, setChartInfo: setChart}: SongTableProps) => {
   const columns: GridColDef[] = [
     {
       field: "title",
@@ -79,8 +79,8 @@ export const SongTable = ({songs, setSong}: SongTableProps) => {
         freeze: chart.freeze,
         chaos: chart.chaos,
         bpm: song.bpm,
-        music_path: song.music.path,
-        music_offset: song.music.offset,
+        song: song,
+        chart: chart,
       })
     })).flat(),
     [songs]
@@ -94,7 +94,7 @@ export const SongTable = ({songs, setSong}: SongTableProps) => {
         onRowClick={(params, _event, _details) => {
           console.log(params)
           const row = params.row
-          setSong(row.title, row.dir_name, row.difficulty, row.music_path, row.music_offset)
+          setChart(row.song, row.chart)
         }}
         components={{
           Toolbar: GridToolbar,

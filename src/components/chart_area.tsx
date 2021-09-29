@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Stage,
   Container,
@@ -21,6 +21,13 @@ import { VolumeControl } from './volume_control';
 import { DivisionLine } from './chart_area/division_line'
 import { Slider } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
+import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
+import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
+
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
@@ -28,6 +35,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import { getDivision } from './chart_area/get_division';
+import ButtonGroup from "@mui/material/ButtonGroup";
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -109,9 +117,6 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
     const y = k * arrowSize * 4 * highSpeed + arrowSize / 2;
     return <DivisionLine y={y} division={k} arrowSize={arrowSize} divisionNumSpace={canvasLeftSpace} key={k} />
   })
-  useEffect(() => {
-    console.log("gimmickViewer:", gimmickViewer);
-  }, [gimmickViewer]);
   const Soflan = () => {
     switch (gimmickViewer) {
       case "detail": return (<SoflanDetail soflans={gimmick.soflan} highSpeed={highSpeed} />);
@@ -136,22 +141,22 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
 }
 
 function getNoteTextures(): { [key: string]: Texture[] } {
-    const dict: {[name: string]: Texture[]} = {};
-    ["red", "blue", "yellow", "green"].map(color => {
-      ["left", "down", "up", "right"].map(direction => {
-        // TODO: directionとcolorはtypesから取るようにする
-        const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
-        dict[`${direction}_${color}`] = Array.from(Array(8), (v,k) => 
-          new Texture(new BaseTexture(`/skin/arrows.png`), new Rectangle(k*64, y, 64, 64))
-        )
-      })
-    });
+  const dict: { [name: string]: Texture[] } = {};
+  ["red", "blue", "yellow", "green"].map(color => {
     ["left", "down", "up", "right"].map(direction => {
-      dict[`${direction}_mine`] = Array.from(Array(8), (v,k) => 
-        new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k*64, 0, 64, 64))
+      // TODO: directionとcolorはtypesから取るようにする
+      const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
+      dict[`${direction}_${color}`] = Array.from(Array(8), (v, k) =>
+        new Texture(new BaseTexture(`/skin/arrows.png`), new Rectangle(k * 64, y, 64, 64))
       )
     })
-    return dict;
+  });
+  ["left", "down", "up", "right"].map(direction => {
+    dict[`${direction}_mine`] = Array.from(Array(8), (v, k) =>
+      new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k * 64, 0, 64, 64))
+    )
+  })
+  return dict;
 }
 
 type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean };
@@ -161,7 +166,9 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
   }, []);
   const arrowOffsetScale = arrowSize * highSpeed * arrowPosEpsilon;
   const initialNoteOfs = 0
-  const noteTextures = getNoteTextures();
+  const noteTextures = useMemo(() => {
+    return getNoteTextures();
+  }, []);
   const arrows = stream.stream
     .map((division) => {
       return division.arrows.map((arrow) => {
@@ -169,10 +176,10 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
         if (arrow.type === "freeze") {
           const length = (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`}/>
+            <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures}/>;
+          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
         } else {
           return (
             <Arrow playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
@@ -220,11 +227,16 @@ function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
   return ret;
 }
 
-type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void };
-const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue }: WindowProps) => {
+function getBPM(division: number, gimmicks: TimingInfo[]): number {
+  if (gimmicks.length === 1) return gimmicks[0].value;
+  if (gimmicks[1].division > division) return gimmicks[0].value;
+  else return getBPM(division, gimmicks.slice(1));
+}
+
+type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void};
+const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue, setBPM }: WindowProps) => {
   const [time, setTime] = useState(0);
   useTick((delta) => {
-
     const newTime = audio.currentTime
     const prevDivision = getDivision(time + chartOffset + 0.08, gimmicks);
     const prevArrows = getPassedArrows(prevDivision, stream);
@@ -235,12 +247,16 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
       clap.currentTime = 0;
       clap.play();
     }
+    if (delta > 2) {
+      console.log(delta)
+    }
     if (playing && Math.floor(prevDivision * 4) < Math.floor(currentDivision * 4)) {
       metronome.currentTime = 0;
       metronome.play();
     }
     // なんか結果的にこれでaudio.currentTimeがNaNの場合も吸収するけど流石にこのままは良くないのでNaNとかしたい
     const newVal = audio.currentTime === 0 ? 100 : Math.ceil(100 - audio.currentTime / audio.duration * 100)
+    setBPM(getBPM(currentDivision, gimmicks.filter(g => g.type === 'soflan')));
     setScrollValue(newVal)
   });
   return (
@@ -256,9 +272,13 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
   return (
     <div>
       <Grid container direction="row" justifyContent="center" alignItems="center">
-        <Button variant="contained" onClick={() => { setHighSpeed(highSpeed - 0.25) }}>-</Button>
         <div>High Speed: {highSpeed.toFixed(2)}</div>
-        <Button variant="contained" onClick={() => { setHighSpeed(highSpeed + 0.25) }}>+</Button>
+        <IconButton onClick={() => { setHighSpeed(highSpeed - 0.25) }}>
+          <RemoveIcon />
+        </IconButton>
+        <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
+          <AddIcon />
+        </IconButton>
       </Grid>
     </div>
   )
@@ -276,10 +296,10 @@ const StepZone = () => {
   )
 }
 
-// TODO: Playerが再生/停止ボタンも持つべき?
 type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any };
 const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
+  const [bpm, setBPM] = useState(0);
   useEffect(() => {
     console.log("player updated")
   }, []);
@@ -289,30 +309,48 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
     }
   }, [scrollValue, setPlaying]);
   return (
-    <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-      <Grid item xs={8}>
-      <Stage width={canvasWidth} height={500}>
-        <StepZone />
-        <Window
-          canvas={canvas}
-          canvasMetaInfo={canvasMetaInfo}
-          audio={audio}
-          playing={playing}
-          gimmicks={gimmicks}
-          chartOffset={chartOffset}
-          clap={clap}
-          metronome={metronome}
-          stream={stream}
-          highSpeed={highSpeed}
-          setScrollValue={setScrollValue}
-        />
-      </Stage>
-    </Grid>
-      <Grid item xs={1}>
-      <Box sx={{ height: 500 }}>
-        <ChartSlider audio={audio} scrollValue={scrollValue} setScrollValue={setScrollValue} />
-      </Box>
-    </Grid>
+    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
+      {`BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
+      <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
+        <Grid item xs={8}>
+          <Stage width={canvasWidth} height={500}>
+            <StepZone />
+            <Window
+              canvas={canvas}
+              canvasMetaInfo={canvasMetaInfo}
+              audio={audio}
+              playing={playing}
+              gimmicks={gimmicks}
+              chartOffset={chartOffset}
+              clap={clap}
+              metronome={metronome}
+              stream={stream}
+              highSpeed={highSpeed}
+              setScrollValue={setScrollValue}
+              setBPM={setBPM}
+            />
+          </Stage>
+        </Grid>
+        <Grid item xs={1}>
+          <Box sx={{ height: 500 }}>
+            <ChartSlider audio={audio} scrollValue={scrollValue} setScrollValue={setScrollValue} />
+          </Box>
+        </Grid>
+      </Grid>
+      <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
+        <IconButton onClick={() => {
+          if (playing) {
+            setPlaying(false); audio.pause();
+          } else {
+            setPlaying(true); audio.play();
+          }
+        }}>
+          {playing ? <PauseCircleOutlineRoundedIcon fontSize="large" /> : <PlayCircleOutlineRoundedIcon fontSize="large" />}
+        </IconButton>
+        <IconButton onClick={() => { audio.currentTime = 0; setPlaying(true); audio.play(); }}>
+          <ReplayIcon fontSize="large" />
+        </IconButton>
+      </Grid>
     </Grid>
   )
 }
@@ -365,49 +403,49 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
 type SettingAreaProps = { setGimmickViewer: (val: GimmickViewer) => void, highSpeed: number, setHighSpeed: (highSpeed: number) => void, audio: HTMLAudioElement, clap: HTMLAudioElement, metronome: HTMLAudioElement, playing: boolean, setPlaying: (playing: boolean) => void };
 const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying }: SettingAreaProps) => {
   return (
-    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
-      <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
-      <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-        <IconButton onClick={() => {
-          if (playing) {
-            setPlaying(false); audio.pause();
-          } else {
-            setPlaying(true); audio.play();
-          }
-        }}>
-          {playing ? <PauseIcon /> : <PlayArrowIcon />}
-        </IconButton>
-        <IconButton onClick={() => { audio.currentTime = 0; }}>
-          <ReplayIcon />
-        </IconButton>
-      </Grid>
-      <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
-        <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-          <Grid item xs={3}>
-            audio:
+    <Grid container direction="column" spacing={2} >
+      <Card variant="outlined">
+        <CardContent>
+          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined">
+        <CardContent>
+          <Grid container direction="column" columnSpacing={1} >
+            <Grid container direction="row" columnSpacing={1} >
+              <Grid item xs={3}>
+                audio:
+              </Grid>
+              <Grid item xs={3}>
+                <VolumeControl audio={audio} />
+              </Grid>
+            </Grid>
+            <Grid container direction="row" columnSpacing={1}>
+              <Grid item xs={3}>
+                hand clap:
+              </Grid>
+              <Grid item xs={3}>
+                <VolumeControl audio={clap} />
+              </Grid>
+            </Grid>
+            <Grid container direction="row" columnSpacing={1}>
+              <Grid item xs={3}>
+                metronome:
+              </Grid>
+              <Grid item xs={3}>
+                <VolumeControl audio={metronome} />
+              </Grid>
+            </Grid>
           </Grid>
-          <Grid item xs={3}>
-            <VolumeControl audio={audio} />
-          </Grid>
-        </Grid>
-        <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-          <Grid item xs={3}>
-            hand clap:
-          </Grid>
-          <Grid item xs={3}>
-            <VolumeControl audio={clap} />
-          </Grid>
-        </Grid>
-        <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-          <Grid item xs={3}>
-            metronome:
-          </Grid>
-          <Grid item xs={3}>
-            <VolumeControl audio={metronome} />
-          </Grid>
-        </Grid>
-      </Grid>
-      <GimmickViewerSelect setValue={setGimmickViewer} />
+        </CardContent>
+      </Card>
+      <Card variant="outlined">
+        <CardContent>
+          <GimmickViewerSelect setValue={setGimmickViewer} />
+        </CardContent>
+      </Card>
+
     </Grid>
   )
 }
@@ -436,7 +474,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           audio={audio}
           playing={playing}
           gimmicks={sortedTimingInfo}
-          key={key}
+          key={JSON.stringify(stream)}
           chartOffset={chartOffset}
           clap={clap}
           metronome={metronome}
