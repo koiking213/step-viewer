@@ -1,6 +1,5 @@
 import './App.css';
 
-import songs from './songs.json'
 import { Stream, Gimmick, Song, Chart } from './types/index'
 import { useEffect, useState } from "react"
 
