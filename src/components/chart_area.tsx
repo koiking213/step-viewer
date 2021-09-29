@@ -301,6 +301,9 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   const [scrollValue, setScrollValue] = useState(100);
   const [bpm, setBPM] = useState(0);
   useEffect(() => {
+    console.log("player updated")
+  }, []);
+  useEffect(() => {
     if (scrollValue === 0) {
       setPlaying(false);
     }
@@ -447,8 +450,8 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number};
-const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement };
+const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [highSpeed, setHighSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
@@ -456,8 +459,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset }: ChartAreaProps) => {
   const key = JSON.stringify(stream) + highSpeed.toString();
   const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
-  const clap = new Audio('/Clap-1.wav');
-  const metronome = new Audio('/metronome.ogg');
   useEffect(() => {
     console.log("chart area updated");
   }, []);

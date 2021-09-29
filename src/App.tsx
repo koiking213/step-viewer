@@ -1,9 +1,9 @@
 import './App.css';
 
 import songs from './songs.json'
-import { useState } from "react"
 import { Stream, Gimmick, Song, Chart } from './types/index'
-import { accessToken } from './token'
+import { useEffect, useState } from "react"
+
 import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
 import Container from '@material-ui/core/Container';
@@ -35,7 +35,7 @@ const emptyChart: Chart = {
 
 
 function downloadFromDropbox(filepath: string, successCallback: (blob: any) => void) {
-  const dbx = new Dropbox({ accessToken: accessToken });
+  const dbx = new Dropbox({ accessToken: process.env.REACT_APP_DROPBOX_TOKEN });
   dbx.filesDownload({ path: filepath })
     .then((response) => {
       successCallback((response.result as any).fileBlob)
@@ -76,8 +76,6 @@ const SongInfo = ({ song, chart }: SongInfoProps) => {
   return (song == emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
 }
 
-
-
 function App() {
   const emptyStream: Stream = JSON.parse('{"stream":[], "cost":-1}');
   const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
@@ -87,6 +85,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [song, setSong] = useState(emptySong)
   const [chart, setChart] = useState(emptyChart)
+  const [clap, setClap] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
+  const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
+  const [songs, setSongs] = useState<Song[]>([])
 
   function setChartInfo(song: Song, chart: Chart): void {
     audio.pause()
@@ -97,11 +98,23 @@ function App() {
     setSong(song)
     setChart(chart)
   }
+  useEffect(() => {
+    setIsLoading(true)
+    getAudio("/Clap-1.wav", setClap, setIsLoading)
+    getAudio("/metronome.ogg", setMetronome, setIsLoading)
+    downloadFromDropbox("/songs.json", (blob) => {
+      blob.text().then((text: string) => {
+        const songs: Song[] = JSON.parse(text)
+        setSongs(songs)
+        setIsLoading(false)
+      })
+    })
+  }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} />
+        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
         <Box display="flex" justifyContent="center" m={1}>
           <SongInfo song={song} chart={chart} />
           <Loading />
