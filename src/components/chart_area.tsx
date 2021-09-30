@@ -213,7 +213,8 @@ function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number, fix
 }
 
 function getPassedArrows(passedDivision: number, stream: Stream): number {
-  return stream.stream.filter(division => division.offset / 192 <= passedDivision).length
+  const arrows = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
+  return arrows.filter(division => division.offset / 192 <= passedDivision).length
 }
 
 function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
