@@ -14,7 +14,7 @@ const emptySong: Song = {
   title: "",
   dir_name: "",
   charts: [],
-  bpm: 0,
+  bpm: "",
   music: {
     path: "",
     offset: 0
