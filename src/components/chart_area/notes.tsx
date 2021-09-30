@@ -58,14 +58,18 @@ export const Mine = ({ dir, y, arrowSize, noteTextures, playing }: MineProps) =>
   return <AnimatedSprite isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_mine`]} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>;
 };
 
-type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean };
-export const Arrow = ({ dir, color, y, arrowSize, noteTextures, playing }: ArrowProps) => {
+type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, freeze: boolean };
+export const Arrow = ({ dir, color, y, arrowSize, noteTextures, playing, freeze }: ArrowProps) => {
   useEffect(() => {
     //console.log(key)
   }, []);
   const key = `arrow-${dir}-${y}-${color}`;
   const x = dir2lane(dir) * arrowSize;
   const rot = dir === "left" ? 90 : dir === "down" ? 0 : dir === "up" ? 180 : 270;
-  return <AnimatedSprite anchor={0.5} angle={rot} isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_${color}`]} x={x+arrowSize/2} y={y+arrowSize/2} height={arrowSize} width={arrowSize} key={key}/>;
+  if (freeze) {
+    return <Sprite image={`/skin/${dir}_freeze_start.png`} x={x} y={y} height={arrowSize} width={arrowSize} key={key}/>
+  } else {
+    return <AnimatedSprite anchor={0.5} angle={rot} isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_${color}`]} x={x+arrowSize/2} y={y+arrowSize/2} height={arrowSize} width={arrowSize} key={key}/>;
+  }
 };
 
