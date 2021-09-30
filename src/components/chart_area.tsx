@@ -8,7 +8,7 @@ import {
   Text,
 } from "@inlet/react-pixi";
 import { settings, SCALE_MODES, Texture, BaseTexture, Rectangle } from "pixi.js";
-import { Stream, Gimmick, Stop, Soflan, TimingInfo } from "../types/index";
+import { Stream, Gimmick, Stop, Soflan, TimingInfo, Direction } from "../types/index";
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
 import Grid from '@material-ui/core/Grid'
@@ -50,6 +50,7 @@ const canvasWidth = arrowSize * 4 + canvasLeftSpace + canvasRightSpace;
 const arrowPosEpsilon = 1 / 192 * 4;
 
 type GimmickViewer = "detail" | "icon" | "off"
+type RotationMode = "mirror" | "left" | "right" | "off"
 
 type SoflanDetailProps = { soflans: Soflan[], highSpeed: number };
 const SoflanDetail = ({ soflans, highSpeed }: SoflanDetailProps) => {
@@ -162,8 +163,8 @@ function getNoteTextures(): { [key: string]: Texture[] } {
   return dict;
 }
 
-type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean, fixedBPM: number, bpmIsFixed: boolean };
-const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed }: CanvasProps) => {
+type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean, fixedBPM: number, bpmIsFixed: boolean, rotationMode: RotationMode };
+const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode }: CanvasProps) => {
   useEffect(() => {
     console.log("canvas updated");
   }, []);
@@ -172,6 +173,32 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed }: CanvasProp
   const noteTextures = useMemo(() => {
     return getNoteTextures();
   }, []);
+  const rotate = (dir: Direction) => {
+    switch (rotationMode) {
+      case "off": return dir;
+      case "mirror": 
+        switch (dir) {
+          case "left": return "right";
+          case "right": return "left";
+          case "up": return "down";
+          case "down": return "up";
+        }
+      case "left":
+        switch (dir) {
+          case "up": return "left";
+          case "left": return "down";
+          case "down": return "right";
+          case "right": return "up";
+        }
+      case "right":
+        switch (dir) {
+          case "up": return "right";
+          case "right": return "down";
+          case "down": return "left";
+          case "left": return "up";
+        }
+      }
+  };
   const arrows = stream.stream
     .map((division) => {
       const hasFreeze = division.arrows.some((arrow) => arrow.type === "freeze")
@@ -186,13 +213,13 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed }: CanvasProp
               ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
               (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
+            <FreezeArrow dir={rotate(arrow.direction)} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
+          return <Mine playing={playing} dir={rotate(arrow.direction)} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
         } else {
           return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
+            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
           );
         }
       });
@@ -423,7 +450,7 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
       <RadioGroup
         aria-label="gimmick"
         defaultValue="icon"
-        name="radio-buttons-group"
+        name="gimmick-display-type"
         onChange={handler}
       >
         <FormControlLabel value="detail" control={<Radio />} label="Detail" />
@@ -434,7 +461,47 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
   );
 }
 
+type RotationModeSelectProps = { setValue: (value: RotationMode) => void };
+const RotationModeSelect = ({ setValue }: RotationModeSelectProps) => {
+  const handler = (event: React.ChangeEvent<HTMLInputElement>, value: string) => {
+    // 来うるvalueは絶対にGimmickViewerのどれかだが、それをコンパイラに教える術を知らない
+    switch (value) {
+      case "off":
+        setValue("off");
+        break;
+      case "mirror":
+        setValue("mirror");
+        break;
+      case "left":
+        setValue("left");
+        break;
+      case "right":
+        setValue("right");
+        break;
+      default:
+        break;
+    }
+  }
+  return (
+    <FormControl component="fieldset">
+      <FormLabel component="legend">rotation option</FormLabel>
+      <RadioGroup
+        aria-label="rotation"
+        defaultValue="off"
+        name="rotation-mode"
+        onChange={handler}
+      >
+        <FormControlLabel value="off" control={<Radio />} label="OFF" />
+        <FormControlLabel value="mirror" control={<Radio />} label="MIRROR" />
+        <FormControlLabel value="left" control={<Radio />} label="LEFT" />
+        <FormControlLabel value="right" control={<Radio />} label="RIGHT" />
+      </RadioGroup>
+    </FormControl>
+  );
+}
+
 type SettingAreaProps = {
+  setRotationMode: (val: RotationMode) => void;
   setGimmickViewer: (val: GimmickViewer) => void,
   highSpeed: number,
   setHighSpeed: (highSpeed: number) => void,
@@ -448,7 +515,7 @@ type SettingAreaProps = {
   bpmIsFixed: boolean,
   setBPMIsFixed: (bpmIsFixed: boolean) => void
 };
-const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
+const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
@@ -487,11 +554,18 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
           </Grid>
         </CardContent>
       </Card>
-      <Card variant="outlined">
-        <CardContent>
-          <GimmickViewerSelect setValue={setGimmickViewer} />
-        </CardContent>
-      </Card>
+      <Grid container direction="row" columnSpacing={1} >
+        <Card variant="outlined">
+          <CardContent>
+            <GimmickViewerSelect setValue={setGimmickViewer} />
+          </CardContent>
+        </Card>
+        <Card variant="outlined">
+          <CardContent>
+            <RotationModeSelect setValue={setRotationMode} />
+          </CardContent>
+        </Card>
+      </Grid>
 
     </Grid>
   )
@@ -502,11 +576,12 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
   const [fixedBPM, setFixedBPM] = useState(550);
   const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
+  const [rotationMode, setRotationMode] = useState<RotationMode>("off");
   const [highSpeed, setHighSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const key = JSON.stringify(stream) + highSpeed.toString();
-  const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} key={key} />;
+  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
   useEffect(() => {
     console.log("chart area updated");
@@ -536,6 +611,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
       </Grid>
       <Grid item xs={4}>
         <SettingArea
+          setRotationMode={setRotationMode}
           setGimmickViewer={setGimmickViewer}
           highSpeed={highSpeed}
           setHighSpeed={setHighSpeed}
