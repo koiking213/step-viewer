@@ -2,8 +2,8 @@ import React from "react"
 import { Song, Chart } from '../types/index'
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 
-type SongTableProps = {songs: Song[], setChartInfo:(song: Song, chart: Chart) => void}
-export const SongTable = ({songs, setChartInfo: setChart}: SongTableProps) => {
+type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void }
+export const SongTable = ({ songs, setChartInfo: setChart }: SongTableProps) => {
   const columns: GridColDef[] = [
     {
       field: "title",
@@ -31,7 +31,15 @@ export const SongTable = ({songs, setChartInfo: setChart}: SongTableProps) => {
       field: "bpm",
       headerName: "BPM",
       width: 100,
-      type: "number",
+      type: "string",
+      sortComparator: (v1, v2, param1, param2) => {
+        const bpm1:string = param1.api.getCellValue(param1.id, 'bpm')
+        const bpm2:string = param2.api.getCellValue(param2.id, 'bpm')
+        console.log(bpm1, typeof bpm1)
+        console.log(bpm2, typeof bpm2)
+        return (parseInt((bpm1.split('-')[1] || bpm1.split('-')[0]), 10) -
+          (parseInt((bpm2.split('-')[1] || bpm2.split('-')[0]), 10)))
+      },
     },
     {
       field: "stream",
@@ -64,10 +72,10 @@ export const SongTable = ({songs, setChartInfo: setChart}: SongTableProps) => {
       type: "number",
     },
   ]
-  const rows = React.useMemo (() => 
-    songs.map((song, i) => song.charts.map((chart:any, j:number) => {
+  const rows = React.useMemo(() =>
+    songs.map((song, i) => song.charts.map((chart: any, j: number) => {
       return ({
-        id: i*10+j,
+        id: i * 10 + j,
         title: song.title,
         difficulty: chart.difficulty,
         level: chart.level,

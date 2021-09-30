@@ -7,7 +7,7 @@ export type Song = {
   title: string;
   dir_name: string;
   charts: Chart[];
-  bpm: number;
+  bpm: string;
   music: {
     path: string;
     offset: number;
