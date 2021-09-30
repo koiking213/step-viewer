@@ -174,6 +174,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed }: CanvasProp
   }, []);
   const arrows = stream.stream
     .map((division) => {
+      const hasFreeze = division.arrows.some((arrow) => arrow.type === "freeze")
       return division.arrows.map((arrow) => {
         const startY =
           bpmIsFixed ?
@@ -191,7 +192,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed }: CanvasProp
           return <Mine playing={playing} dir={arrow.direction} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
         } else {
           return (
-            <Arrow playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
+            <Arrow freeze={hasFreeze} playing={playing} dir={arrow.direction} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
           );
         }
       });
