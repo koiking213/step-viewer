@@ -21,10 +21,13 @@ import { VolumeControl } from './volume_control';
 import { DivisionLine } from './chart_area/division_line'
 import { Slider } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
+import TextField from '@mui/material/TextField';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
 import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
+import Switch from '@mui/material/Switch';
+
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -159,8 +162,8 @@ function getNoteTextures(): { [key: string]: Texture[] } {
   return dict;
 }
 
-type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean };
-const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
+type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean, fixedBPM: number, bpmIsFixed: boolean };
+const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed }: CanvasProps) => {
   useEffect(() => {
     console.log("canvas updated");
   }, []);
@@ -172,9 +175,15 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
   const arrows = stream.stream
     .map((division) => {
       return division.arrows.map((arrow) => {
-        const startY = (division.offset - initialNoteOfs) * arrowOffsetScale;
+        const startY =
+          bpmIsFixed ?
+            ((division.time * fixedBPM / 240 * 192) - initialNoteOfs) * arrowOffsetScale :
+            (division.offset - initialNoteOfs) * arrowOffsetScale;
         if (arrow.type === "freeze") {
-          const length = (arrow.end - division.offset) * arrowOffsetScale;
+          const length =
+            bpmIsFixed ?
+              ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
+              (arrow.end - division.offset) * arrowOffsetScale;
           return (
             <FreezeArrow dir={arrow.direction} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
           );
@@ -192,10 +201,14 @@ const Canvas = ({ stream, highSpeed, playing }: CanvasProps) => {
 };
 
 // timeは秒
-function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number): number {
-  const division = getDivision(time, gimmicks);
-  const divisionLen = arrowSize * 4 * highSpeed;
-  return (-1) * division * divisionLen;
+function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number, fixedBPM: number, bpmIsFixed: boolean): number {
+  if (bpmIsFixed) {
+    return (-1) * fixedBPM * time / 60 * arrowSize;
+  } else {
+    const division = getDivision(time, gimmicks);
+    const divisionLen = arrowSize * 4 * highSpeed;
+    return (-1) * division * divisionLen;
+  }
 }
 
 function getPassedArrows(passedDivision: number, stream: Stream): number {
@@ -233,8 +246,8 @@ function getBPM(division: number, gimmicks: TimingInfo[]): number {
   else return getBPM(division, gimmicks.slice(1));
 }
 
-type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void};
-const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue, setBPM }: WindowProps) => {
+type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void, fixedBPM: number, bpmIsFixed: boolean };
+const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue, setBPM, fixedBPM, bpmIsFixed }: WindowProps) => {
   const [time, setTime] = useState(0);
   useTick((delta) => {
     const newTime = audio.currentTime
@@ -261,14 +274,24 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
   });
   return (
     <Container>
-      <Container key={0} position={[0, getScrollY(time + chartOffset, gimmicks, highSpeed)]}>{canvasMetaInfo}</Container>
-      <Container key={1} position={[canvasLeftSpace, getScrollY(time + chartOffset, gimmicks, highSpeed)]}>{canvas}</Container>
+      {bpmIsFixed ? <></> : <Container key={0} position={[0, getScrollY(time + chartOffset, gimmicks, highSpeed, fixedBPM, bpmIsFixed)]}>{canvasMetaInfo}</Container>}
+      <Container key={1} position={[canvasLeftSpace, getScrollY(time + chartOffset, gimmicks, highSpeed, fixedBPM, bpmIsFixed)]}>{canvas}</Container>
     </Container>
   )
 };
 
-type HighSpeedAreaProps = { highSpeed: number, setHighSpeed: (highSpeed: number) => void };
-const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
+type HighSpeedAreaProps = {
+  highSpeed: number, setHighSpeed: (highSpeed: number) => void,
+  fixedBPM: number, setFixedBPM: (bpm: number) => void,
+  bpmIsFixed: boolean, setBPMIsFixed: (bpmIsFixed: boolean) => void,
+};
+const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: HighSpeedAreaProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFixedBPM(parseInt(e.target.value));
+  };
+  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setBPMIsFixed(event.target.checked);
+  };
   return (
     <div>
       <Grid container direction="row" justifyContent="center" alignItems="center">
@@ -279,6 +302,13 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed }: HighSpeedAreaProps) => {
         <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
           <AddIcon />
         </IconButton>
+      </Grid>
+      <Grid container direction="row" justifyContent="center" alignItems="center">
+        <div>fixed BPM:</div>
+        <Switch checked={bpmIsFixed} onChange={handleSwitchChange} />
+        <TextField id="fixed-BPM" label="BPM" type="number" variant="standard"
+          onChange={handleChange} value={fixedBPM}
+        />
       </Grid>
     </div>
   )
@@ -296,8 +326,8 @@ const StepZone = () => {
   )
 }
 
-type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any };
-const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio }: PlayerProps) => {
+type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean };
+const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, fixedBPM, bpmIsFixed }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
   const [bpm, setBPM] = useState(0);
   useEffect(() => {
@@ -310,7 +340,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   }, [scrollValue, setPlaying]);
   return (
     <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
-      {`BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
+      {bpmIsFixed ? `BPM: ${fixedBPM}` : `BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
         <Grid item xs={8}>
           <Stage width={canvasWidth} height={500}>
@@ -328,6 +358,8 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
               highSpeed={highSpeed}
               setScrollValue={setScrollValue}
               setBPM={setBPM}
+              fixedBPM={fixedBPM}
+              bpmIsFixed={bpmIsFixed}
             />
           </Stage>
         </Grid>
@@ -400,13 +432,26 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
   );
 }
 
-type SettingAreaProps = { setGimmickViewer: (val: GimmickViewer) => void, highSpeed: number, setHighSpeed: (highSpeed: number) => void, audio: HTMLAudioElement, clap: HTMLAudioElement, metronome: HTMLAudioElement, playing: boolean, setPlaying: (playing: boolean) => void };
-const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying }: SettingAreaProps) => {
+type SettingAreaProps = {
+  setGimmickViewer: (val: GimmickViewer) => void,
+  highSpeed: number,
+  setHighSpeed: (highSpeed: number) => void,
+  audio: HTMLAudioElement,
+  clap: HTMLAudioElement,
+  metronome: HTMLAudioElement,
+  playing: boolean,
+  setPlaying: (playing: boolean) => void,
+  fixedBPM: number,
+  setFixedBPM: (fixedBPM: number) => void,
+  bpmIsFixed: boolean,
+  setBPMIsFixed: (bpmIsFixed: boolean) => void
+};
+const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
         <CardContent>
-          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} />
+          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} fixedBPM={fixedBPM} setFixedBPM={setFixedBPM} bpmIsFixed={bpmIsFixed} setBPMIsFixed={setBPMIsFixed} />
         </CardContent>
       </Card>
 
@@ -452,12 +497,14 @@ const SettingArea = ({ setGimmickViewer, highSpeed, setHighSpeed, audio, clap, m
 
 type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement };
 const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
+  const [fixedBPM, setFixedBPM] = useState(550);
+  const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [highSpeed, setHighSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const key = JSON.stringify(stream) + highSpeed.toString();
-  const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} key={key} />;
+  const canvas = <Canvas playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
   useEffect(() => {
     console.log("chart area updated");
@@ -481,6 +528,8 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           stream={stream}
           highSpeed={highSpeed}
           setPlaying={setPlaying}
+          fixedBPM={fixedBPM}
+          bpmIsFixed={bpmIsFixed}
         />
       </Grid>
       <Grid item xs={4}>
@@ -493,6 +542,10 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           metronome={metronome}
           playing={playing}
           setPlaying={setPlaying}
+          fixedBPM={fixedBPM}
+          setFixedBPM={setFixedBPM}
+          bpmIsFixed={bpmIsFixed}
+          setBPMIsFixed={setBPMIsFixed}
         />
       </Grid>
     </Grid>

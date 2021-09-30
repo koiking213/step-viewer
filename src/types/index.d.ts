@@ -32,9 +32,11 @@ export type Stream = {
           direction: Direction;
           type: string;
           end: number;
+          end_time: number;
       }];
       color: Color;
       offset: number;
+      time: number;
   }[];
   cost: number;
 }
