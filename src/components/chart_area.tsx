@@ -239,9 +239,8 @@ function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number, fix
   }
 }
 
-function getPassedArrows(passedDivision: number, stream: Stream): number {
-  const arrows = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
-  return arrows.filter(division => division.offset / 192 <= passedDivision).length
+function getPassedArrows(time: number, sortedArrowTimes: number[]): number {
+  return sortedArrowTimes.findIndex((t) => t > time);
 }
 
 function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
@@ -275,28 +274,29 @@ function getBPM(division: number, gimmicks: TimingInfo[]): number {
   else return getBPM(division, gimmicks.slice(1));
 }
 
-type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void, fixedBPM: number, bpmIsFixed: boolean };
-const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, setScrollValue, setBPM, fixedBPM, bpmIsFixed }: WindowProps) => {
+type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
+const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, highSpeed, audio, setScrollValue, setBPM, fixedBPM, bpmIsFixed, sortedArrowTimes }: WindowProps) => {
   const [time, setTime] = useState(0);
-  useTick((delta) => {
+  useTick((_delta) => {
     const newTime = audio.currentTime
-    const prevDivision = getDivision(time + chartOffset + 0.08, gimmicks);
-    const prevArrows = getPassedArrows(prevDivision, stream);
+    const prevTime = time
     setTime(newTime);
+    if (clap.volume != 0) {
+      const prevArrows = getPassedArrows(prevTime + chartOffset + 0.08, sortedArrowTimes);
+      const currentArrows = getPassedArrows(newTime + chartOffset + 0.08, sortedArrowTimes);
+      if (playing && prevArrows < currentArrows) {
+        clap.currentTime = 0;
+        clap.play();
+      }
+    }
     const currentDivision = getDivision(newTime + chartOffset + 0.08, gimmicks);
-    const currentArrows = getPassedArrows(currentDivision, stream);
-    if (playing && prevArrows < currentArrows) {
-      clap.currentTime = 0;
-      clap.play();
+    if (metronome.volume != 0) {
+      const prevDivision = getDivision(prevTime + chartOffset + 0.08, gimmicks);
+      if (playing && Math.floor(prevDivision * 4) < Math.floor(currentDivision * 4)) {
+        metronome.currentTime = 0;
+        metronome.play();
+      }
     }
-    if (delta > 2) {
-      console.log(delta)
-    }
-    if (playing && Math.floor(prevDivision * 4) < Math.floor(currentDivision * 4)) {
-      metronome.currentTime = 0;
-      metronome.play();
-    }
-    // なんか結果的にこれでaudio.currentTimeがNaNの場合も吸収するけど流石にこのままは良くないのでNaNとかしたい
     const newVal = audio.currentTime === 0 ? 100 : Math.ceil(100 - audio.currentTime / audio.duration * 100)
     setBPM(getBPM(currentDivision, gimmicks.filter(g => g.type === 'soflan')));
     setScrollValue(newVal)
@@ -344,7 +344,6 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, bpmIsFi
 }
 
 const StepZone = () => {
-  const noteTextures = getNoteTextures();
   return (
     <Container>
       <Sprite image={`/skin/left_stepzone.png`} x={canvasLeftSpace} y={0} height={arrowSize} width={arrowSize} />
@@ -355,8 +354,8 @@ const StepZone = () => {
   )
 }
 
-type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean };
-const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, fixedBPM, bpmIsFixed }: PlayerProps) => {
+type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
+const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
   const [bpm, setBPM] = useState(0);
   useEffect(() => {
@@ -383,12 +382,12 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
               chartOffset={chartOffset}
               clap={clap}
               metronome={metronome}
-              stream={stream}
               highSpeed={highSpeed}
               setScrollValue={setScrollValue}
               setBPM={setBPM}
               fixedBPM={fixedBPM}
               bpmIsFixed={bpmIsFixed}
+              sortedArrowTimes={sortedArrowTimes}
             />
           </Stage>
         </Grid>
@@ -583,6 +582,11 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
   const key = JSON.stringify(stream) + highSpeed.toString();
   const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} key={key} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
+  const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
+  useEffect(() => {
+    const arrowStream = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
+    setSortedArrowTimes(arrowStream.map(arrows => arrows.time));
+  }, [stream]);
   useEffect(() => {
     console.log("chart area updated");
   }, []);
@@ -607,6 +611,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           setPlaying={setPlaying}
           fixedBPM={fixedBPM}
           bpmIsFixed={bpmIsFixed}
+          sortedArrowTimes={sortedArrowTimes}
         />
       </Grid>
       <Grid item xs={4}>
