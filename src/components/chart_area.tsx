@@ -579,9 +579,8 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
   const [highSpeed, setHighSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
-  const key = JSON.stringify(stream) + highSpeed.toString();
-  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} key={key} />;
-  const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
+  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} />;
+  const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
   const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
   useEffect(() => {
     const arrowStream = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
@@ -602,7 +601,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           audio={audio}
           playing={playing}
           gimmicks={sortedTimingInfo}
-          key={JSON.stringify(stream)}
           chartOffset={chartOffset}
           clap={clap}
           metronome={metronome}
