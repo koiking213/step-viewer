@@ -366,10 +366,10 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
     }
   }, [scrollValue, setPlaying]);
   return (
-    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center">
+    <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center" width={canvasWidth}>
       {bpmIsFixed ? `BPM: ${fixedBPM}` : `BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
-        <Grid item xs={8}>
+        <Grid item xs={11} >
           <Stage width={canvasWidth} height={500}>
             <StepZone />
             <Window
@@ -590,8 +590,8 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
     setPlaying(false);
   }, [audio]);
   return (
-    <Grid container direction="row" alignItems="center" justifyContent="center">
-      <Grid item xs={5}>
+    <Grid container direction="row" spacing={2}>
+      <Grid item width={canvasWidth+80}>
         <Player
           canvas={canvas}
           canvasMetaInfo={canvasMetaInfo}
@@ -608,7 +608,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           sortedArrowTimes={sortedArrowTimes}
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item >
         <SettingArea
           setRotationMode={setRotationMode}
           setGimmickViewer={setGimmickViewer}
