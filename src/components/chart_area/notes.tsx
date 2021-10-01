@@ -12,8 +12,22 @@ function dir2lane(dir: Direction): number {
   }
 }
 
-type FreezeArrowProps = { dir: Direction; offset: number; length: number; arrowSize: number; highSpeed: number };
-export function FreezeArrow({ dir, offset, length, arrowSize, highSpeed }: FreezeArrowProps) {
+const textureFreezeBody = [
+  new BaseTexture(`/skin/left_freeze_body.png`),
+  new BaseTexture(`/skin/down_freeze_body.png`),
+  new BaseTexture(`/skin/up_freeze_body.png`),
+  new BaseTexture(`/skin/right_freeze_body.png`)
+];
+
+const textureFreezeEnd = [
+  new BaseTexture(`/skin/left_freeze_end.png`),
+  new BaseTexture(`/skin/down_freeze_end.png`),
+  new BaseTexture(`/skin/up_freeze_end.png`),
+  new BaseTexture(`/skin/right_freeze_end.png`)
+];
+
+type FreezeArrowProps = { dir: Direction; offset: number; length: number; arrowSize: number; yMultiplier: number };
+export function FreezeArrow({ dir, offset, length, arrowSize, yMultiplier: highSpeed }: FreezeArrowProps) {
   const x = dir2lane(dir) * arrowSize;
   const y = offset * highSpeed;
   const bodyLength = length - arrowSize/2;
@@ -21,7 +35,7 @@ export function FreezeArrow({ dir, offset, length, arrowSize, highSpeed }: Freez
   const imageWidth = 60;
   const textureOfs = (bodyLength*(imageHeight/arrowSize/2)) % imageHeight;
   const ofs = bodyLength % (imageHeight/(imageHeight/arrowSize/2));
-  const texture = new Texture(new BaseTexture(`/skin/${dir}_freeze_body.png`), new Rectangle(0, imageHeight-textureOfs, imageWidth, textureOfs));
+  const texture = new Texture(textureFreezeBody[dir2lane(dir)], new Rectangle(0, imageHeight-textureOfs, imageWidth, textureOfs));
   const bodyHead = ofs < 0 ? <></> : 
         <Sprite texture={texture} x={x+(arrowSize/32)} y={y + arrowSize / 2} height={ofs} width={arrowSize-(arrowSize/32*2)} />
   // TODO: なんか便利なやつないの
@@ -34,7 +48,7 @@ export function FreezeArrow({ dir, offset, length, arrowSize, highSpeed }: Freez
   const pureArrowHeight = 36;
   const endTextureLength = Math.min(endWidth, pureArrowHeight+length*(endWidth/arrowSize));
   const endOffset = (endWidth - endTextureLength) / (endWidth/arrowSize);
-  const endTexture = new Texture(new BaseTexture(`/skin/${dir}_freeze_end.png`), new Rectangle(0, endHeight-endTextureLength, endWidth, endTextureLength));
+  const endTexture = new Texture(textureFreezeEnd[dir2lane(dir)], new Rectangle(0, endHeight-endTextureLength, endWidth, endTextureLength));
   const end = 
       <Sprite texture={endTexture} x={x} y={y + length + endOffset} height={endTextureLength/(endHeight/arrowSize)} width={arrowSize} />
   return (
@@ -47,15 +61,15 @@ export function FreezeArrow({ dir, offset, length, arrowSize, highSpeed }: Freez
   );
 }
 
-type MineProps = { dir: Direction; offset: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, highSpeed: number };
-export const Mine = ({ dir, offset, arrowSize, noteTextures, playing, highSpeed }: MineProps) => {
+type MineProps = { dir: Direction; offset: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, yMultiplier: number };
+export const Mine = ({ dir, offset, arrowSize, noteTextures, playing, yMultiplier: highSpeed }: MineProps) => {
   const x = dir2lane(dir) * arrowSize;
   const y = offset * highSpeed;
   return <AnimatedSprite isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_mine`]} x={x} y={y} height={arrowSize} width={arrowSize} />;
 };
 
-type ArrowProps = { dir: Direction; color: Color; offset: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, freeze: boolean, highSpeed: number };
-export const Arrow = ({ dir, color, offset, arrowSize, noteTextures, playing, freeze, highSpeed }: ArrowProps) => {
+type ArrowProps = { dir: Direction; color: Color; offset: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, freeze: boolean, yMultiplier: number };
+export const Arrow = ({ dir, color, offset, arrowSize, noteTextures, playing, freeze, yMultiplier: highSpeed }: ArrowProps) => {
   const x = dir2lane(dir) * arrowSize;
   const y = offset * highSpeed;
   const rot = dir === "left" ? 90 : dir === "down" ? 0 : dir === "up" ? 180 : 270;
