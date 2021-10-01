@@ -141,8 +141,8 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
 
 function getNoteTextures(): { [key: string]: Texture[] } {
   const dict: { [name: string]: Texture[] } = {};
-  ["red", "blue", "yellow", "green"].map(color => {
-    ["left", "down", "up", "right"].map(direction => {
+  ["red", "blue", "yellow", "green"].forEach(color => {
+    ["left", "down", "up", "right"].forEach(direction => {
       // TODO: directionとcolorはtypesから取るようにする
       const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
       dict[`${direction}_${color}`] = Array.from(Array(8), (v, k) =>
@@ -150,7 +150,7 @@ function getNoteTextures(): { [key: string]: Texture[] } {
       )
     })
   });
-  ["left", "down", "up", "right"].map(direction => {
+  ["left", "down", "up", "right"].forEach(direction => {
     dict[`${direction}_mine`] = Array.from(Array(8), (v, k) =>
       new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k * 64, 0, 64, 64))
     )
@@ -178,6 +178,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "up": return "down";
           case "down": return "up";
         }
+        break;
       case "left":
         switch (dir) {
           case "up": return "left";
@@ -185,6 +186,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "down": return "right";
           case "right": return "up";
         }
+        break;
       case "right":
         switch (dir) {
           case "up": return "right";
@@ -192,6 +194,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "down": return "left";
           case "left": return "up";
         }
+        break;
       }
   };
   const arrows = stream.stream
@@ -276,7 +279,7 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
     const newTime = audio.currentTime
     const prevTime = time
     setTime(newTime);
-    if (clap.volume != 0) {
+    if (clap.volume !== 0) {
       const prevArrows = getPassedArrows(prevTime + chartOffset + 0.08, sortedArrowTimes);
       const currentArrows = getPassedArrows(newTime + chartOffset + 0.08, sortedArrowTimes);
       if (playing && prevArrows < currentArrows) {
@@ -285,7 +288,7 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
       }
     }
     const currentDivision = getDivision(newTime + chartOffset + 0.08, gimmicks);
-    if (metronome.volume != 0) {
+    if (metronome.volume !== 0) {
       const prevDivision = getDivision(prevTime + chartOffset + 0.08, gimmicks);
       if (playing && Math.floor(prevDivision * 4) < Math.floor(currentDivision * 4)) {
         metronome.currentTime = 0;

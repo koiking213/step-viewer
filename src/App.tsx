@@ -72,7 +72,7 @@ function getSong(filepath: string, setter: (song: Stream) => void) {
 
 type SongInfoProps = { song: Song, chart: Chart};
 const SongInfo = ({ song, chart }: SongInfoProps) => {
-  return (song == emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
+  return (song === emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
 }
 
 function App() {
