@@ -3,7 +3,6 @@ import {
   Stage,
   Container,
   Sprite,
-  AnimatedSprite,
   useTick,
   Text,
 } from "@inlet/react-pixi";
@@ -12,11 +11,8 @@ import { Stream, Gimmick, Stop, Soflan, TimingInfo, Direction } from "../types/i
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
 import Grid from '@material-ui/core/Grid'
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import ReplayIcon from '@material-ui/icons/Replay';
-import PauseIcon from '@material-ui/icons/Pause';
 import { VolumeControl } from './volume_control';
 import { DivisionLine } from './chart_area/division_line'
 import { Slider } from '@material-ui/core';
@@ -38,7 +34,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import { getDivision } from './chart_area/get_division';
-import ButtonGroup from "@mui/material/ButtonGroup";
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -354,8 +349,8 @@ const StepZone = () => {
   )
 }
 
-type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
-const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes }: PlayerProps) => {
+type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
+const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
   const [bpm, setBPM] = useState(0);
   useEffect(() => {
@@ -507,14 +502,12 @@ type SettingAreaProps = {
   audio: HTMLAudioElement,
   clap: HTMLAudioElement,
   metronome: HTMLAudioElement,
-  playing: boolean,
-  setPlaying: (playing: boolean) => void,
   fixedBPM: number,
   setFixedBPM: (fixedBPM: number) => void,
   bpmIsFixed: boolean,
   setBPMIsFixed: (bpmIsFixed: boolean) => void
 };
-const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
+const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
@@ -604,7 +597,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           chartOffset={chartOffset}
           clap={clap}
           metronome={metronome}
-          stream={stream}
           highSpeed={highSpeed}
           setPlaying={setPlaying}
           fixedBPM={fixedBPM}
@@ -621,8 +613,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           audio={audio}
           clap={clap}
           metronome={metronome}
-          playing={playing}
-          setPlaying={setPlaying}
           fixedBPM={fixedBPM}
           setFixedBPM={setFixedBPM}
           bpmIsFixed={bpmIsFixed}
