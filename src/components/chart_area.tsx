@@ -3,7 +3,6 @@ import {
   Stage,
   Container,
   Sprite,
-  AnimatedSprite,
   useTick,
   Text,
 } from "@inlet/react-pixi";
@@ -12,11 +11,8 @@ import { Stream, Gimmick, Stop, Soflan, TimingInfo, Direction } from "../types/i
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
 import Grid from '@material-ui/core/Grid'
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import ReplayIcon from '@material-ui/icons/Replay';
-import PauseIcon from '@material-ui/icons/Pause';
 import { VolumeControl } from './volume_control';
 import { DivisionLine } from './chart_area/division_line'
 import { Slider } from '@material-ui/core';
@@ -38,7 +34,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import { getDivision } from './chart_area/get_division';
-import ButtonGroup from "@mui/material/ButtonGroup";
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -146,8 +141,8 @@ const CanvasMetaInfo = ({ stream, highSpeed, gimmick, gimmickViewer }: CanvasMet
 
 function getNoteTextures(): { [key: string]: Texture[] } {
   const dict: { [name: string]: Texture[] } = {};
-  ["red", "blue", "yellow", "green"].map(color => {
-    ["left", "down", "up", "right"].map(direction => {
+  ["red", "blue", "yellow", "green"].forEach(color => {
+    ["left", "down", "up", "right"].forEach(direction => {
       // TODO: directionとcolorはtypesから取るようにする
       const y = color === "red" ? 0 : color === "blue" ? 64 : color === "yellow" ? 128 : 192;
       dict[`${direction}_${color}`] = Array.from(Array(8), (v, k) =>
@@ -155,7 +150,7 @@ function getNoteTextures(): { [key: string]: Texture[] } {
       )
     })
   });
-  ["left", "down", "up", "right"].map(direction => {
+  ["left", "down", "up", "right"].forEach(direction => {
     dict[`${direction}_mine`] = Array.from(Array(8), (v, k) =>
       new Texture(new BaseTexture(`/skin/${direction}_mine.png`), new Rectangle(k * 64, 0, 64, 64))
     )
@@ -168,8 +163,9 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
   useEffect(() => {
     console.log("canvas updated");
   }, []);
-  const arrowOffsetScale = arrowSize * highSpeed * arrowPosEpsilon;
-  const initialNoteOfs = 0
+  const arrowOffsetScale = arrowSize * arrowPosEpsilon;
+  const initialNoteOfs = 0;
+  const yMultiplier = bpmIsFixed ? 1 : highSpeed;
   const noteTextures = useMemo(() => {
     return getNoteTextures();
   }, []);
@@ -183,6 +179,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "up": return "down";
           case "down": return "up";
         }
+        break;
       case "left":
         switch (dir) {
           case "up": return "left";
@@ -190,6 +187,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "down": return "right";
           case "right": return "up";
         }
+        break;
       case "right":
         switch (dir) {
           case "up": return "right";
@@ -197,13 +195,14 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "down": return "left";
           case "left": return "up";
         }
+        break;
       }
   };
   const arrows = stream.stream
     .map((division) => {
       const hasFreeze = division.arrows.some((arrow) => arrow.type === "freeze")
       return division.arrows.map((arrow) => {
-        const startY =
+        const startYOffset =
           bpmIsFixed ?
             ((division.time * fixedBPM / 240 * 192) - initialNoteOfs) * arrowOffsetScale :
             (division.offset - initialNoteOfs) * arrowOffsetScale;
@@ -213,13 +212,13 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
               ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
               (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={rotate(arrow.direction)} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
+            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier}/>
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={rotate(arrow.direction)} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
+          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier}/>;
         } else {
           return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
+            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier}/>
           );
         }
       });
@@ -281,7 +280,7 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
     const newTime = audio.currentTime
     const prevTime = time
     setTime(newTime);
-    if (clap.volume != 0) {
+    if (clap.volume !== 0) {
       const prevArrows = getPassedArrows(prevTime + chartOffset + 0.08, sortedArrowTimes);
       const currentArrows = getPassedArrows(newTime + chartOffset + 0.08, sortedArrowTimes);
       if (playing && prevArrows < currentArrows) {
@@ -290,7 +289,7 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
       }
     }
     const currentDivision = getDivision(newTime + chartOffset + 0.08, gimmicks);
-    if (metronome.volume != 0) {
+    if (metronome.volume !== 0) {
       const prevDivision = getDivision(prevTime + chartOffset + 0.08, gimmicks);
       if (playing && Math.floor(prevDivision * 4) < Math.floor(currentDivision * 4)) {
         metronome.currentTime = 0;
@@ -354,8 +353,8 @@ const StepZone = () => {
   )
 }
 
-type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, stream: Stream, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
-const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, stream, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes }: PlayerProps) => {
+type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
+const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
   const [bpm, setBPM] = useState(0);
   useEffect(() => {
@@ -507,14 +506,12 @@ type SettingAreaProps = {
   audio: HTMLAudioElement,
   clap: HTMLAudioElement,
   metronome: HTMLAudioElement,
-  playing: boolean,
-  setPlaying: (playing: boolean) => void,
   fixedBPM: number,
   setFixedBPM: (fixedBPM: number) => void,
   bpmIsFixed: boolean,
   setBPMIsFixed: (bpmIsFixed: boolean) => void
 };
-const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, playing, setPlaying, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
+const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
@@ -579,9 +576,8 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
   const [highSpeed, setHighSpeed] = useState(1.0);
   const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
-  const key = JSON.stringify(stream) + highSpeed.toString();
-  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} key={key} />;
-  const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} key={key + gimmickViewer} />;
+  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} />;
+  const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
   const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
   useEffect(() => {
     const arrowStream = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
@@ -602,11 +598,9 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           audio={audio}
           playing={playing}
           gimmicks={sortedTimingInfo}
-          key={JSON.stringify(stream)}
           chartOffset={chartOffset}
           clap={clap}
           metronome={metronome}
-          stream={stream}
           highSpeed={highSpeed}
           setPlaying={setPlaying}
           fixedBPM={fixedBPM}
@@ -623,8 +617,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           audio={audio}
           clap={clap}
           metronome={metronome}
-          playing={playing}
-          setPlaying={setPlaying}
           fixedBPM={fixedBPM}
           setFixedBPM={setFixedBPM}
           bpmIsFixed={bpmIsFixed}
