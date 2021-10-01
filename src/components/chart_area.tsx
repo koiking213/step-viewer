@@ -163,7 +163,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
   useEffect(() => {
     console.log("canvas updated");
   }, []);
-  const arrowOffsetScale = arrowSize * highSpeed * arrowPosEpsilon;
+  const arrowOffsetScale = arrowSize * arrowPosEpsilon;
   const initialNoteOfs = 0
   const noteTextures = useMemo(() => {
     return getNoteTextures();
@@ -201,7 +201,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
     .map((division) => {
       const hasFreeze = division.arrows.some((arrow) => arrow.type === "freeze")
       return division.arrows.map((arrow) => {
-        const startY =
+        const startYOffset =
           bpmIsFixed ?
             ((division.time * fixedBPM / 240 * 192) - initialNoteOfs) * arrowOffsetScale :
             (division.offset - initialNoteOfs) * arrowOffsetScale;
@@ -211,13 +211,13 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
               ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
               (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={rotate(arrow.direction)} y={startY} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} />
+            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} highSpeed={highSpeed}/>
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={rotate(arrow.direction)} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />;
+          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} highSpeed={highSpeed}/>;
         } else {
           return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} y={startY} arrowSize={arrowSize} key={`${arrow.direction}-${startY}`} noteTextures={noteTextures} />
+            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} highSpeed={highSpeed}/>
           );
         }
       });

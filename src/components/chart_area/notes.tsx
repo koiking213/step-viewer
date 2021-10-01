@@ -12,9 +12,10 @@ function dir2lane(dir: Direction): number {
   }
 }
 
-type FreezeArrowProps = { dir: Direction; y: number; length: number; arrowSize: number };
-export function FreezeArrow({ dir, y, length, arrowSize }: FreezeArrowProps) {
+type FreezeArrowProps = { dir: Direction; offset: number; length: number; arrowSize: number; highSpeed: number };
+export function FreezeArrow({ dir, offset, length, arrowSize, highSpeed }: FreezeArrowProps) {
   const x = dir2lane(dir) * arrowSize;
+  const y = offset * highSpeed;
   const bodyLength = length - arrowSize/2;
   const imageHeight = 128;
   const imageWidth = 60;
@@ -22,7 +23,7 @@ export function FreezeArrow({ dir, y, length, arrowSize }: FreezeArrowProps) {
   const ofs = bodyLength % (imageHeight/(imageHeight/arrowSize/2));
   const texture = new Texture(new BaseTexture(`/skin/${dir}_freeze_body.png`), new Rectangle(0, imageHeight-textureOfs, imageWidth, textureOfs));
   const bodyHead = ofs < 0 ? <></> : 
-        <Sprite texture={texture} x={x+(arrowSize/32)} y={y  + arrowSize / 2} height={ofs} width={arrowSize-(arrowSize/32*2)} />
+        <Sprite texture={texture} x={x+(arrowSize/32)} y={y + arrowSize / 2} height={ofs} width={arrowSize-(arrowSize/32*2)} />
   // TODO: なんか便利なやつないの
   const bodyTail =  (bodyLength < arrowSize) ? (<></>) :
         Array.from(Array(Math.floor(bodyLength / arrowSize / 2)), (v, k) =>
@@ -46,15 +47,17 @@ export function FreezeArrow({ dir, y, length, arrowSize }: FreezeArrowProps) {
   );
 }
 
-type MineProps = { dir: Direction; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean };
-export const Mine = ({ dir, y, arrowSize, noteTextures, playing }: MineProps) => {
+type MineProps = { dir: Direction; offset: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, highSpeed: number };
+export const Mine = ({ dir, offset, arrowSize, noteTextures, playing, highSpeed }: MineProps) => {
   const x = dir2lane(dir) * arrowSize;
+  const y = offset * highSpeed;
   return <AnimatedSprite isPlaying={playing} initialFrame={3} animationSpeed={0.1} textures={noteTextures[`${dir}_mine`]} x={x} y={y} height={arrowSize} width={arrowSize} />;
 };
 
-type ArrowProps = { dir: Direction; color: Color; y: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, freeze: boolean };
-export const Arrow = ({ dir, color, y, arrowSize, noteTextures, playing, freeze }: ArrowProps) => {
+type ArrowProps = { dir: Direction; color: Color; offset: number; arrowSize: number, noteTextures: {[name: string]: Texture[]}, playing: boolean, freeze: boolean, highSpeed: number };
+export const Arrow = ({ dir, color, offset, arrowSize, noteTextures, playing, freeze, highSpeed }: ArrowProps) => {
   const x = dir2lane(dir) * arrowSize;
+  const y = offset * highSpeed;
   const rot = dir === "left" ? 90 : dir === "down" ? 0 : dir === "up" ? 180 : 270;
   if (freeze) {
     return <Sprite image={`/skin/${dir}_freeze_start.png`} x={x} y={y} height={arrowSize} width={arrowSize} />
