@@ -325,7 +325,7 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, bpmIsFi
     <div>
       <Grid container direction="row" justifyContent="center" alignItems="center">
         <div>High Speed: {highSpeed.toFixed(2)}</div>
-        <IconButton onClick={() => { setHighSpeed(highSpeed - 0.25) }}>
+        <IconButton onClick={() => { if (highSpeed > 0.25) setHighSpeed(highSpeed - 0.25) }}>
           <RemoveIcon />
         </IconButton>
         <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
