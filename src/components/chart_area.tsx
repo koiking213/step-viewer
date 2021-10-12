@@ -239,7 +239,8 @@ function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number, fix
 }
 
 function getPassedArrows(time: number, sortedArrowTimes: number[]): number {
-  return sortedArrowTimes.findIndex((t) => t > time);
+  const index = sortedArrowTimes.findIndex((t) => t > time);
+  return index == -1 ? sortedArrowTimes.length : index;
 }
 
 function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
