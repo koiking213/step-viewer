@@ -18,7 +18,8 @@ const emptySong: Song = {
   music: {
     path: "",
     offset: 0
-  }
+  },
+  banner: ""
 }
 
 const emptyChart: Chart = {
@@ -42,6 +43,12 @@ function downloadFromDropbox(filepath: string, successCallback: (blob: any) => v
     .catch(function (error: any) {
       console.log(error)
     });
+}
+
+function getBanner(filepath: string, setter: (banner: string) => void) {
+  downloadFromDropbox(filepath, (blob) => {
+    setter(URL.createObjectURL(blob))
+  })
 }
 
 function getAudio(filepath: string, setter: (audio: HTMLAudioElement) => void, loading: (b: boolean) => void) {
@@ -87,12 +94,18 @@ function App() {
   const [clap, setClap] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [songs, setSongs] = useState<Song[]>([])
+  const [banner, setBanner] = useState("")
 
   function setChartInfo(song: Song, chart: Chart): void {
     audio.pause()
     setIsLoading(true)
     getSong(`/${song.dir_name}/${chart.difficulty}.json`, setStream)
     getGimmick(`/${song.dir_name}/gimmick.json`, setGimmick)
+    if (song.banner !== "") {
+      getBanner(`/${song.dir_name}/${song.banner}`, setBanner)
+    } else {
+      setBanner("")
+    }
     getAudio(`/${song.dir_name}/${song.music.path}`, setAudio, setIsLoading)
     setSong(song)
     setChart(chart)
@@ -113,7 +126,7 @@ function App() {
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
+        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} banner={banner}/>
         <Box display="flex" justifyContent="center" m={1}>
           <SongInfo song={song} chart={chart} />
           <Loading />
