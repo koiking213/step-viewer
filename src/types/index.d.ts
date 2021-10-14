@@ -12,6 +12,7 @@ export type Song = {
     path: string;
     offset: number;
   }
+  banner: string;
 }
 
 export type Chart = {

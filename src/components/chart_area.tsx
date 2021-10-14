@@ -568,7 +568,7 @@ const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpee
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement };
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; };
 const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
   const [fixedBPM, setFixedBPM] = useState(550);
   const [bpmIsFixed, setBPMIsFixed] = useState(false);

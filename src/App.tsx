@@ -7,7 +7,8 @@ import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
 import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
-import {SongTable} from './components/table'
+import Grid from '@material-ui/core/Grid'
+import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
 
 const emptySong: Song = {
@@ -18,7 +19,8 @@ const emptySong: Song = {
   music: {
     path: "",
     offset: 0
-  }
+  },
+  banner: ""
 }
 
 const emptyChart: Chart = {
@@ -42,6 +44,12 @@ function downloadFromDropbox(filepath: string, successCallback: (blob: any) => v
     .catch(function (error: any) {
       console.log(error)
     });
+}
+
+function getBanner(filepath: string, setter: (banner: string) => void) {
+  downloadFromDropbox(filepath, (blob) => {
+    setter(URL.createObjectURL(blob))
+  })
 }
 
 function getAudio(filepath: string, setter: (audio: HTMLAudioElement) => void, loading: (b: boolean) => void) {
@@ -70,7 +78,7 @@ function getSong(filepath: string, setter: (song: Stream) => void) {
   })
 };
 
-type SongInfoProps = { song: Song, chart: Chart};
+type SongInfoProps = { song: Song, chart: Chart };
 const SongInfo = ({ song, chart }: SongInfoProps) => {
   return (song === emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
 }
@@ -87,12 +95,18 @@ function App() {
   const [clap, setClap] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [songs, setSongs] = useState<Song[]>([])
+  const [banner, setBanner] = useState("")
 
   function setChartInfo(song: Song, chart: Chart): void {
     audio.pause()
     setIsLoading(true)
     getSong(`/${song.dir_name}/${chart.difficulty}.json`, setStream)
     getGimmick(`/${song.dir_name}/gimmick.json`, setGimmick)
+    if (song.banner !== "") {
+      getBanner(`/${song.dir_name}/${song.banner}`, setBanner)
+    } else {
+      setBanner("")
+    }
     getAudio(`/${song.dir_name}/${song.music.path}`, setAudio, setIsLoading)
     setSong(song)
     setChart(chart)
@@ -113,13 +127,19 @@ function App() {
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
-        <Box display="flex" justifyContent="center" m={1}>
-          <SongInfo song={song} chart={chart} />
-          <Loading />
-        </Box>
-        <SongTable songs={songs} setChartInfo={setChartInfo}
-        />
+        <Grid container direction="row" spacing={2}>
+          <Grid item >
+            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
+          </Grid>
+          <Grid item >
+            <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" />
+            <Box display="flex" justifyContent="center" m={1}>
+              <SongInfo song={song} chart={chart} />
+              <Loading />
+            </Box>
+          </Grid>
+        </Grid>
+        <SongTable songs={songs} setChartInfo={setChartInfo} />
       </Box>
     </Container>
   );
