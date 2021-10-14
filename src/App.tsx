@@ -7,7 +7,8 @@ import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
 import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
-import {SongTable} from './components/table'
+import Grid from '@material-ui/core/Grid'
+import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
 
 const emptySong: Song = {
@@ -77,7 +78,7 @@ function getSong(filepath: string, setter: (song: Stream) => void) {
   })
 };
 
-type SongInfoProps = { song: Song, chart: Chart};
+type SongInfoProps = { song: Song, chart: Chart };
 const SongInfo = ({ song, chart }: SongInfoProps) => {
   return (song === emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
 }
@@ -126,13 +127,19 @@ function App() {
   return (
     <Container>
       <Box sx={{ my: 4 }}>
-        <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} banner={banner}/>
-        <Box display="flex" justifyContent="center" m={1}>
-          <SongInfo song={song} chart={chart} />
-          <Loading />
-        </Box>
-        <SongTable songs={songs} setChartInfo={setChartInfo}
-        />
+        <Grid container direction="row" spacing={2}>
+          <Grid item >
+            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
+          </Grid>
+          <Grid item >
+            <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" />
+            <Box display="flex" justifyContent="center" m={1}>
+              <SongInfo song={song} chart={chart} />
+              <Loading />
+            </Box>
+          </Grid>
+        </Grid>
+        <SongTable songs={songs} setChartInfo={setChartInfo} />
       </Box>
     </Container>
   );

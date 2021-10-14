@@ -568,8 +568,8 @@ const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpee
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; banner: string };
-const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, banner }: ChartAreaProps) => {
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; };
+const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
   const [fixedBPM, setFixedBPM] = useState(550);
   const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
@@ -623,9 +623,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, banne
           bpmIsFixed={bpmIsFixed}
           setBPMIsFixed={setBPMIsFixed}
         />
-      </Grid>
-      <Grid item >
-        <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" />
       </Grid>
     </Grid>
   );
