@@ -56,6 +56,16 @@ function getAudio(filepath: string, setter: (audio: HTMLAudioElement) => void, l
   downloadFromDropbox(filepath, (blob) => {
     const audio = new Audio(URL.createObjectURL(blob))
     setter(audio)
+  })
+}
+
+function getMusic(filepath: string, setter: (audio: HTMLAudioElement) => void, loading: (b: boolean) => void, durationSetter: (duration: number) => void) {
+  downloadFromDropbox(filepath, (blob) => {
+    const audio = new Audio(URL.createObjectURL(blob))
+    setter(audio)
+    audio.onloadedmetadata = () => {
+      durationSetter(audio.duration)
+    }
     loading(false)
   })
 }
@@ -84,7 +94,7 @@ const SongInfo = ({ song, chart }: SongInfoProps) => {
 }
 
 function App() {
-  const emptyStream: Stream = JSON.parse('{"stream":[], "cost":-1}');
+  const emptyStream: Stream = JSON.parse('{"stream":[], "stream_info":[]}');
   const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
   const [stream, setStream] = useState(emptyStream)
   const [gimmick, setGimmick] = useState(emptyGimmick)
@@ -96,6 +106,7 @@ function App() {
   const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [songs, setSongs] = useState<Song[]>([])
   const [banner, setBanner] = useState("")
+  const [songDuration, setSongDuration] = useState(0);
 
   function setChartInfo(song: Song, chart: Chart): void {
     audio.pause()
@@ -107,7 +118,7 @@ function App() {
     } else {
       setBanner("")
     }
-    getAudio(`/${song.dir_name}/${song.music.path}`, setAudio, setIsLoading)
+    getMusic(`/${song.dir_name}/${song.music.path}`, setAudio, setIsLoading, setSongDuration)
     setSong(song)
     setChart(chart)
   }
@@ -129,7 +140,7 @@ function App() {
       <Box sx={{ my: 4 }}>
         <Grid container direction="row" spacing={2}>
           <Grid item >
-            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
+            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} songDuration={songDuration} />
           </Grid>
           <Grid item >
             <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" />

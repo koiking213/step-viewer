@@ -39,7 +39,13 @@ export type Stream = {
       offset: number;
       time: number;
   }[];
-  cost: number;
+  stream_info: {
+    begin: number;
+    end: nubmer;
+    begin_time: number;
+    end_time: number;
+    cost: number;
+  }[];
 }
 
 export type Soflan = {

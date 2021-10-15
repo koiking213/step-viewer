@@ -24,7 +24,6 @@ import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineR
 import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
 import Switch from '@mui/material/Switch';
 
-
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 
@@ -42,6 +41,7 @@ const arrowSize = 64;
 const canvasLeftSpace = 30;
 const canvasRightSpace = 80;
 const canvasWidth = arrowSize * 4 + canvasLeftSpace + canvasRightSpace;
+const canvasHeight = 500;
 const arrowPosEpsilon = 1 / 192 * 4;
 
 type GimmickViewer = "detail" | "icon" | "off"
@@ -172,7 +172,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
   const rotate = (dir: Direction) => {
     switch (rotationMode) {
       case "off": return dir;
-      case "mirror": 
+      case "mirror":
         switch (dir) {
           case "left": return "right";
           case "right": return "left";
@@ -196,7 +196,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "left": return "up";
         }
         break;
-      }
+    }
   };
   const arrows = stream.stream
     .map((division) => {
@@ -212,13 +212,13 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
               ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
               (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier}/>
+            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier} />
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier}/>;
+          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} />;
         } else {
           return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier}/>
+            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} />
           );
         }
       });
@@ -371,7 +371,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
       {bpmIsFixed ? `BPM: ${fixedBPM}` : `BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
         <Grid item xs={11} >
-          <Stage width={canvasWidth} height={500}>
+          <Stage width={canvasWidth} height={canvasHeight}>
             <StepZone />
             <Window
               canvas={canvas}
@@ -392,7 +392,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
           </Stage>
         </Grid>
         <Grid item xs={1}>
-          <Box sx={{ height: 500 }}>
+          <Box sx={{ height: canvasHeight }}>
             <ChartSlider audio={audio} scrollValue={scrollValue} setScrollValue={setScrollValue} />
           </Box>
         </Grid>
@@ -568,8 +568,34 @@ const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpee
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; };
-const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
+type StreamInfoProps = { stream: Stream, songDuration: number}
+const StreamInfo = ({ stream, songDuration }: StreamInfoProps) => {
+  const sorted_info = stream.stream_info.sort((a, b) => b.cost - a.cost)
+  useEffect(() => {
+    console.log(markers)
+    console.log(sorted_info.slice(0,4))
+  }, [stream]);
+  const markers = sorted_info.slice(0,4).map(info => {
+    const y = (info.begin_time / songDuration) * canvasHeight
+    console.log(y)
+    return (
+      <Container position={[0, y]} key={info.begin_time}>
+        <Text text={info.cost.toString()} style={{ fontSize: 12, fill: "white" }} key={info.begin_time}/>
+      </Container>
+    )
+  });
+  return (
+    <Grid container direction="column">
+      cost
+      <Stage width={30} height={canvasHeight}>
+        {markers}
+      </Stage>
+    </Grid>
+  );
+}
+
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; songDuration: number };
+const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, songDuration }: ChartAreaProps) => {
   const [fixedBPM, setFixedBPM] = useState(550);
   const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
@@ -587,12 +613,9 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
   useEffect(() => {
     console.log("chart area updated");
   }, []);
-  useEffect(() => {
-    setPlaying(false);
-  }, [audio]);
   return (
     <Grid container direction="row" spacing={2}>
-      <Grid item width={canvasWidth+80}>
+      <Grid item width={canvasWidth}>
         <Player
           canvas={canvas}
           canvasMetaInfo={canvasMetaInfo}
@@ -607,6 +630,12 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
           fixedBPM={fixedBPM}
           bpmIsFixed={bpmIsFixed}
           sortedArrowTimes={sortedArrowTimes}
+        />
+      </Grid>
+      <Grid item >
+        <StreamInfo
+          stream={stream}
+          songDuration={songDuration}
         />
       </Grid>
       <Grid item >
