@@ -499,6 +499,30 @@ const RotationModeSelect = ({ setValue }: RotationModeSelectProps) => {
   );
 }
 
+type PlaySpeedAreaProps = {audio: HTMLAudioElement};
+const PlaySpeedArea = ({audio}: PlaySpeedAreaProps) => {
+  const [playSpeed, setPlaySpeed] = useState(1.0);
+  return (
+      <Grid container direction="row" justifyContent="center" alignItems="center">
+        <div>Play Speed: {playSpeed.toFixed(2)}</div>
+        <IconButton onClick={() => { 
+          if (playSpeed > 0.1) {
+            setPlaySpeed(playSpeed - 0.1);
+            audio.playbackRate = playSpeed
+          } 
+          }}>
+          <RemoveIcon />
+        </IconButton>
+        <IconButton onClick={() => { 
+          setPlaySpeed(playSpeed + 0.1)
+          audio.playbackRate = playSpeed
+          }}>
+          <AddIcon />
+        </IconButton>
+      </Grid>
+  )
+}
+
 type SettingAreaProps = {
   setRotationMode: (val: RotationMode) => void;
   setGimmickViewer: (val: GimmickViewer) => void,
@@ -518,6 +542,11 @@ const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpee
       <Card variant="outlined">
         <CardContent>
           <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} fixedBPM={fixedBPM} setFixedBPM={setFixedBPM} bpmIsFixed={bpmIsFixed} setBPMIsFixed={setBPMIsFixed} />
+        </CardContent>
+      </Card>
+      <Card variant="outlined">
+        <CardContent>
+          <PlaySpeedArea audio={audio} />
         </CardContent>
       </Card>
 
