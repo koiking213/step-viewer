@@ -7,6 +7,7 @@ import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
 import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
+import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid'
 import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
@@ -137,13 +138,15 @@ function App() {
           </Grid>
           <Grid item >
             <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" alt="banner" />
-            <Box display="flex" justifyContent="center" m={1}>
+            <Box display="flex" justifyContent="center" m={1} width="300" >
+            <Card sx={{display:"inline-block", width:300}} >
               <SongInfo song={song} chart={chart} />
-              <Loading />
+</Card>
             </Box>
             <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} audio={audio}/>
           </Grid>
         </Grid>
+        <Loading />
         <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {
           setPlaylist(playlist.concat(selecteds))
         }} />
