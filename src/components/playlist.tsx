@@ -5,10 +5,14 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Card from '@material-ui/core/Card';
+import IconButton from '@material-ui/core/IconButton';
 import Typography from '@mui/material/Typography';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-
+import LoopIcon from '@mui/icons-material/Loop';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from 'react';
+import { ListItem } from '@material-ui/core';
 
 type ChartInfo = { song: Song, chart: Chart };
 
@@ -31,6 +35,14 @@ const Row = ({ chartInfo, clickHandler, id, playing }: RowProps) => {
   const cardColor = playing ? "#dddddd" : "#ffffff"
   return (
     <Card sx={{ bgcolor: cardColor }}>
+      <ListItem
+            secondaryAction={
+              <IconButton edge="end" aria-label="comments">
+                <DeleteIcon/>
+              </IconButton>
+            }
+            disablePadding
+      >
       <ListItemButton onClick={() => {
         clickHandler(song, chart, id)
       }}>
@@ -40,6 +52,7 @@ const Row = ({ chartInfo, clickHandler, id, playing }: RowProps) => {
           sx={{ bgcolor: getDifficultyColor(chart.difficulty) }}
         />
       </ListItemButton>
+</ListItem>
     </Card>
   )
 }
@@ -66,6 +79,11 @@ export const PlayListArea = ({ chartInfoList, setChartInfo, audio }: PlayListAre
     <Card>
       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
         {`Play List (${chartInfoList.length === 0 ? 0 : currentId + 1}/${chartInfoList.length})`}
+      </Typography>
+      <Typography sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
+        <LoopIcon/>
+        <ShuffleIcon/>
+        <DeleteIcon/>
       </Typography>
       <List
         sx={{
