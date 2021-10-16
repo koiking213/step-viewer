@@ -6,8 +6,13 @@ import AddIcon from '@material-ui/icons/Add';
 
 type ChartInfo = {song: Song, chart: Chart};
 
-type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void};
-export const PlayListArea = ({chartInfoList, setChartInfo}: PlayListAreaProps) => {
+
+type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void, playing: boolean, setPlaying: (playing:boolean) => void};
+export const PlayListArea = ({chartInfoList, setChartInfo, playing, setPlaying}: PlayListAreaProps) => {
+  async function onRowClick(song: Song, chart: Chart) {
+    const a = await setChartInfo(song, chart)
+    setPlaying(true)
+  };
   const columns: GridColDef[] = [
     {
       field: "level",
@@ -43,7 +48,7 @@ export const PlayListArea = ({chartInfoList, setChartInfo}: PlayListAreaProps) =
         onRowClick={(params, _event, _details) => {
           console.log(params)
           const row = params.row
-          setChartInfo(row.song, row.chart)
+          onRowClick(row.song, row.chart)
         }}
       />
     </div>

@@ -36,50 +36,41 @@ const emptyChart: Chart = {
 }
 
 
-function downloadFromDropbox(filepath: string, successCallback: (blob: any) => void) {
+async function downloadFromDropbox(filepath: string) {
   const dbx = new Dropbox({ accessToken: process.env.REACT_APP_DROPBOX_TOKEN });
-  dbx.filesDownload({ path: filepath })
-    .then((response) => {
-      successCallback((response.result as any).fileBlob)
-    })
-    .catch(function (error: any) {
-      console.log(error)
-    });
+  const response = await dbx.filesDownload({ path: filepath });
+  return (response.result as any).fileBlob;
+  //.then((response) => {
+  //  successCallback((response.result as any).fileBlob)
+  //})
+  //.catch(function (error: any) {
+  //  console.log(error)
+  //});
 }
 
-function getBanner(filepath: string, setter: (banner: string) => void) {
-  downloadFromDropbox(filepath, (blob) => {
-    setter(URL.createObjectURL(blob))
-  })
+async function getBanner(filepath: string): Promise<string> {
+  const blob = await downloadFromDropbox(filepath);
+  return URL.createObjectURL(blob);
 }
 
-function getAudio(filepath: string, setter: (audio: HTMLAudioElement) => void, loading: (b: boolean) => void) {
-  downloadFromDropbox(filepath, (blob) => {
-    const audio = new Audio(URL.createObjectURL(blob))
-    setter(audio)
-    loading(false)
-  })
+async function getAudio(filepath: string): Promise<HTMLAudioElement> {
+  const blob = await downloadFromDropbox(filepath);
+  return new Audio(URL.createObjectURL(blob));
 }
 
-function getGimmick(filepath: string, setter: (gimmick: Gimmick) => void) {
-  downloadFromDropbox(filepath, (blob) => {
-    blob.text().then((text: string) => {
-      const json: Gimmick = JSON.parse(text)
-      setter(json)
-    })
-  })
+async function getGimmick(filepath: string): Promise<Gimmick> {
+  const blob = await downloadFromDropbox(filepath);
+  const text = await blob.text();
+  return JSON.parse(text);
 };
 
-function getSong(filepath: string, setter: (song: Stream) => void) {
-  downloadFromDropbox(filepath, (blob) => {
-    blob.text().then((text: string) => {
-      const json: Stream = JSON.parse(text)
-      setter(json)
-    })
-  })
+async function getSong(filepath: string): Promise<Stream> {
+  const blob = await downloadFromDropbox(filepath);
+  const text = await blob.text();
+  return JSON.parse(text);
 };
 
-type ChartInfo = {song: Song, chart: Chart};
+type ChartInfo = { song: Song, chart: Chart };
 
 type SongInfoProps = { song: Song, chart: Chart };
 const SongInfo = ({ song, chart }: SongInfoProps) => {
@@ -100,32 +91,39 @@ function App() {
   const [songs, setSongs] = useState<Song[]>([])
   const [banner, setBanner] = useState("")
   const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
+  const [playing, setPlaying] = useState(false);
 
-  function setChartInfo(song: Song, chart: Chart): void {
+  async function setChartInfo(song: Song, chart: Chart): Promise<void> {
     audio.pause()
     setIsLoading(true)
-    getSong(`/${song.dir_name}/${chart.difficulty}.json`, setStream)
-    getGimmick(`/${song.dir_name}/gimmick.json`, setGimmick)
+    setStream(await getSong(`/${song.dir_name}/${chart.difficulty}.json`));
+    setGimmick(await getGimmick(`/${song.dir_name}/gimmick.json`));
     if (song.banner !== "") {
-      getBanner(`/${song.dir_name}/${song.banner}`, setBanner)
+      setBanner(await getBanner(`/${song.dir_name}/${song.banner}`));
     } else {
       setBanner("")
     }
-    getAudio(`/${song.dir_name}/${song.music.path}`, setAudio, setIsLoading)
+    const newAudio = await getAudio(`/${song.dir_name}/${song.music.path}`);
+    setAudio(newAudio)
     setSong(song)
     setChart(chart)
+    setIsLoading(false)
+    newAudio.play();
+    setPlaying(true)
+    return 
   }
   useEffect(() => {
-    setIsLoading(true)
-    getAudio("/Clap-1.wav", setClap, setIsLoading)
-    getAudio("/metronome.ogg", setMetronome, setIsLoading)
-    downloadFromDropbox("/songs.json", (blob) => {
-      blob.text().then((text: string) => {
-        const songs: Song[] = JSON.parse(text)
-        setSongs(songs)
-        setIsLoading(false)
-      })
-    })
+    const f = async () => {
+      setIsLoading(true);
+      setClap(await getAudio("/Clap-1.wav"));
+      setMetronome(await getAudio("/metronome.ogg"));
+      const blob = await downloadFromDropbox("/songs.json");
+      const text = await blob.text();
+      const songs: Song[] = JSON.parse(text)
+      setSongs(songs)
+      setIsLoading(false);
+    };
+    f();
   }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
   return (
@@ -133,7 +131,15 @@ function App() {
       <Box sx={{ my: 4 }}>
         <Grid container direction="row" spacing={2}>
           <Grid item >
-            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} />
+            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} playing={playing} 
+            setPlaying={(playing: boolean) => {
+              setPlaying(playing);
+              if (playing) {
+                audio.play();
+              } else {
+                audio.pause();
+              }
+            }} />
           </Grid>
           <Grid item >
             <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" />
@@ -141,12 +147,12 @@ function App() {
               <SongInfo song={song} chart={chart} />
               <Loading />
             </Box>
-            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} />
+            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} playing={playing} setPlaying={setPlaying} />
           </Grid>
         </Grid>
         <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {
           setPlaylist(playlist.concat(selecteds))
-        }}/>
+        }} />
       </Box>
     </Container>
   );
