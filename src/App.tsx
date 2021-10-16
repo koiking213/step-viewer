@@ -40,12 +40,6 @@ async function downloadFromDropbox(filepath: string) {
   const dbx = new Dropbox({ accessToken: process.env.REACT_APP_DROPBOX_TOKEN });
   const response = await dbx.filesDownload({ path: filepath });
   return (response.result as any).fileBlob;
-  //.then((response) => {
-  //  successCallback((response.result as any).fileBlob)
-  //})
-  //.catch(function (error: any) {
-  //  console.log(error)
-  //});
 }
 
 async function getBanner(filepath: string): Promise<string> {
@@ -108,8 +102,8 @@ function App() {
     setSong(song)
     setChart(chart)
     setIsLoading(false)
-    newAudio.play();
     setPlaying(true)
+    newAudio.play();
     return 
   }
   useEffect(() => {
@@ -147,7 +141,7 @@ function App() {
               <SongInfo song={song} chart={chart} />
               <Loading />
             </Box>
-            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} />
+            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} audio={audio}/>
           </Grid>
         </Grid>
         <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {

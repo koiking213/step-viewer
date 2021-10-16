@@ -361,11 +361,6 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   useEffect(() => {
     console.log("player updated")
   }, []);
-  useEffect(() => {
-    if (scrollValue === 0) {
-      setPlaying(false);
-    }
-  }, [scrollValue, setPlaying]);
   return (
     <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center" width={canvasWidth}>
       {bpmIsFixed ? `BPM: ${fixedBPM}` : `BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}

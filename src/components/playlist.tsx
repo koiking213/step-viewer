@@ -1,52 +1,72 @@
 import { Song, Chart } from '../types/index'
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { useEffect, useState } from 'react';
 
 type ChartInfo = {song: Song, chart: Chart};
 
+function getDifficultyColor(difficulty: string) {
+  switch (difficulty) {
+    case "Beginner": return "#afeeee"
+    case "Easy": return "#ffe4c4"
+    case "Medium": return "#ffa07a"
+    case "Hard": return "#98fb98"
+    case "Challenge": return "#ee82ee"
+    case "Edit": return "#a9a9a9"
+  }
+  return "#ffffff"
+}
 
-type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void };
-export const PlayListArea = ({chartInfoList, setChartInfo}: PlayListAreaProps) => {
-  async function onRowClick(song: Song, chart: Chart) {
-    setChartInfo(song, chart)
-  };
-  const columns: GridColDef[] = [
-    {
-      field: "level",
-      headerName: "Level",
-      width: 20,
-      type: "number",
-    },
-    {
-      field: "title",
-      headerName: "Title",
-      width: 250,
-    },
-  ]
-  const rows = 
-    chartInfoList.map(({song, chart}: ChartInfo, i: number) => {
-      return ({
-        id: i,
-        title: song.title,
-        difficulty: chart.difficulty,
-        level: chart.level,
-        dir_name: song.dir_name,
-        song: song,
-        chart: chart,
-      })
-    });
+type RowProps = {chartInfo: ChartInfo, clickHandler: (song: Song, chart: Chart, key: number) => void, id: number}
+const Row = ({chartInfo, clickHandler, id}: RowProps) => {
+  const song = chartInfo.song
+  const chart = chartInfo.chart
   return (
-    <div style={{ height: 400, width: 200 }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        disableColumnMenu={true}
-        disableColumnSelector={true}
-        onRowClick={(params, _event, _details) => {
-          console.log(params)
-          const row = params.row
-          onRowClick(row.song, row.chart)
-        }}
-      />
-    </div>
+    <ListItemButton onClick={() => {
+      clickHandler(song, chart, id)
+      }}>
+      <ListItemText 
+        primary={`${chart.level} ${song.title}`}
+        sx={{bgcolor: getDifficultyColor(chart.difficulty)}}
+         />
+    </ListItemButton>
+  )
+}
+
+
+type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void, audio: HTMLAudioElement };
+export const PlayListArea = ({chartInfoList, setChartInfo, audio}: PlayListAreaProps) => {
+  async function onRowClick(song: Song, chart: Chart, id: number) {
+    setChartInfo(song, chart)
+    setCurrentId(id)
+  };
+  const [currentId, setCurrentId] = useState(0);
+  const rows = chartInfoList.map((info, i)=> <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} />)
+  useEffect(() => {
+    audio.onended = (_event) => {
+      const newId = currentId + 1
+      if (newId < chartInfoList.length) {
+        const row = chartInfoList[newId];
+        onRowClick(row.song, row.chart, newId);
+      }
+    }
+  }, [audio, chartInfoList]);
+  return (
+    <List
+      sx={{ 
+        width: '100%',
+        maxWidth: 300,
+        bgcolor: 'background.paper',
+        position: 'relative',
+        overflow: 'auto',
+        maxHeight: 300,
+        '& ul': { padding: 0 },
+      }}
+    >
+      {rows}
+    </List>
   )
 }
