@@ -1,17 +1,13 @@
-import React from "react"
 import { Song, Chart } from '../types/index'
-import { DataGrid, GridColDef, GridToolbar, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid';
-import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 type ChartInfo = {song: Song, chart: Chart};
 
 
-type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void, playing: boolean, setPlaying: (playing:boolean) => void};
-export const PlayListArea = ({chartInfoList, setChartInfo, playing, setPlaying}: PlayListAreaProps) => {
+type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void };
+export const PlayListArea = ({chartInfoList, setChartInfo}: PlayListAreaProps) => {
   async function onRowClick(song: Song, chart: Chart) {
-    const a = await setChartInfo(song, chart)
-    setPlaying(true)
+    setChartInfo(song, chart)
   };
   const columns: GridColDef[] = [
     {

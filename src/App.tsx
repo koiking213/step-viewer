@@ -142,12 +142,12 @@ function App() {
             }} />
           </Grid>
           <Grid item >
-            <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" />
+            <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" alt="banner" />
             <Box display="flex" justifyContent="center" m={1}>
               <SongInfo song={song} chart={chart} />
               <Loading />
             </Box>
-            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} playing={playing} setPlaying={setPlaying} />
+            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} />
           </Grid>
         </Grid>
         <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {

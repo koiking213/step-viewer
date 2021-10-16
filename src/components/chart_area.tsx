@@ -240,7 +240,7 @@ function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number, fix
 
 function getPassedArrows(time: number, sortedArrowTimes: number[]): number {
   const index = sortedArrowTimes.findIndex((t) => t > time);
-  return index == -1 ? sortedArrowTimes.length : index;
+  return index === -1 ? sortedArrowTimes.length : index;
 }
 
 function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
@@ -615,9 +615,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playi
   useEffect(() => {
     console.log("chart area updated");
   }, []);
-  useEffect(() => {
-    setPlaying(false);
-  }, [audio]);
   return (
     <Grid container direction="row" spacing={2}>
       <Grid item width={canvasWidth+80}>

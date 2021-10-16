@@ -1,26 +1,7 @@
 import React, { useState } from "react"
 import { Song, Chart } from '../types/index'
-import { DataGrid, GridColDef, GridToolbar, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid';
-import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { Button } from "@material-ui/core";
-
-const CustomToolbar = (props: any) => {
-  return (
-    <GridToolbarContainer>
-      <GridToolbarColumnsButton />
-      <GridToolbarFilterButton {...props} />
-      <GridToolbarDensitySelector />
-      <GridToolbarExport {...props} />
-      {
-        <IconButton onClick={() => { }}>
-          <AddIcon />
-        </IconButton>
-
-      }
-    </GridToolbarContainer>
-  );
-}
 
 type ChartInfo = {song: Song, chart: Chart};
 type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void, addToPlaylist: (info: ChartInfo[]) => void }
@@ -140,7 +121,7 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist}: SongT
           setSelectedCharts(infos);
         }}
         components={{
-          Toolbar: CustomToolbar,
+          Toolbar: GridToolbar,
         }}
       />
       <Button variant="contained" onClick={() => {addToPlaylist(selectedCharts)}} >add selected charts to the play list</Button>
