@@ -4,9 +4,13 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Card from '@material-ui/core/Card';
+import Typography from '@mui/material/Typography';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+
 import { useEffect, useState } from 'react';
 
-type ChartInfo = {song: Song, chart: Chart};
+type ChartInfo = { song: Song, chart: Chart };
 
 function getDifficultyColor(difficulty: string) {
   switch (difficulty) {
@@ -20,31 +24,35 @@ function getDifficultyColor(difficulty: string) {
   return "#ffffff"
 }
 
-type RowProps = {chartInfo: ChartInfo, clickHandler: (song: Song, chart: Chart, key: number) => void, id: number}
-const Row = ({chartInfo, clickHandler, id}: RowProps) => {
+type RowProps = { chartInfo: ChartInfo, clickHandler: (song: Song, chart: Chart, key: number) => void, id: number, playing: boolean }
+const Row = ({ chartInfo, clickHandler, id, playing }: RowProps) => {
   const song = chartInfo.song
   const chart = chartInfo.chart
+  const cardColor = playing ? "#dddddd" : "#ffffff"
   return (
-    <ListItemButton onClick={() => {
-      clickHandler(song, chart, id)
+    <Card sx={{ bgcolor: cardColor }}>
+      <ListItemButton onClick={() => {
+        clickHandler(song, chart, id)
       }}>
-      <ListItemText 
-        primary={`${chart.level} ${song.title}`}
-        sx={{bgcolor: getDifficultyColor(chart.difficulty)}}
-         />
-    </ListItemButton>
+        {playing ? <ListItemIcon><PlayCircleOutlineIcon /></ListItemIcon> : <></>}
+        <ListItemText
+          primary={`${chart.level} ${song.title}`}
+          sx={{ bgcolor: getDifficultyColor(chart.difficulty) }}
+        />
+      </ListItemButton>
+    </Card>
   )
 }
 
 
-type PlayListAreaProps = {chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void, audio: HTMLAudioElement };
-export const PlayListArea = ({chartInfoList, setChartInfo, audio}: PlayListAreaProps) => {
+type PlayListAreaProps = { chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void, audio: HTMLAudioElement };
+export const PlayListArea = ({ chartInfoList, setChartInfo, audio }: PlayListAreaProps) => {
   async function onRowClick(song: Song, chart: Chart, id: number) {
     setChartInfo(song, chart)
     setCurrentId(id)
   };
   const [currentId, setCurrentId] = useState(0);
-  const rows = chartInfoList.map((info, i)=> <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} />)
+  const rows = chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId} />)
   useEffect(() => {
     audio.onended = (_event) => {
       const newId = currentId + 1
@@ -55,18 +63,23 @@ export const PlayListArea = ({chartInfoList, setChartInfo, audio}: PlayListAreaP
     }
   }, [audio, chartInfoList]);
   return (
-    <List
-      sx={{ 
-        width: '100%',
-        maxWidth: 300,
-        bgcolor: 'background.paper',
-        position: 'relative',
-        overflow: 'auto',
-        maxHeight: 300,
-        '& ul': { padding: 0 },
-      }}
-    >
-      {rows}
-    </List>
+    <Card>
+      <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+        {`Play List (${chartInfoList.length === 0 ? 0 : currentId + 1}/${chartInfoList.length})`}
+      </Typography>
+      <List
+        sx={{
+          width: '100%',
+          maxWidth: 300,
+          bgcolor: 'background.paper',
+          position: 'relative',
+          overflow: 'auto',
+          maxHeight: 300,
+          '& ul': { padding: 0 },
+        }}
+      >
+        {rows}
+      </List>
+    </Card>
   )
 }
