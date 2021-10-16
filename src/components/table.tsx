@@ -1,9 +1,31 @@
-import React from "react"
+import React, { useState } from "react"
 import { Song, Chart } from '../types/index'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbar, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid';
+import IconButton from '@material-ui/core/IconButton';
+import AddIcon from '@material-ui/icons/Add';
+import { Button } from "@material-ui/core";
 
-type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void }
-export const SongTable = ({ songs, setChartInfo: setChart }: SongTableProps) => {
+const CustomToolbar = (props: any) => {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton {...props} />
+      <GridToolbarDensitySelector />
+      <GridToolbarExport {...props} />
+      {
+        <IconButton onClick={() => { }}>
+          <AddIcon />
+        </IconButton>
+
+      }
+    </GridToolbarContainer>
+  );
+}
+
+type ChartInfo = {song: Song, chart: Chart};
+type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void, addToPlaylist: (info: ChartInfo[]) => void }
+export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist}: SongTableProps) => {
+  const [selectedCharts, setSelectedCharts] = useState<ChartInfo[]>([]);
   const columns: GridColDef[] = [
     {
       field: "title",
@@ -99,15 +121,29 @@ export const SongTable = ({ songs, setChartInfo: setChart }: SongTableProps) => 
         rows={rows}
         columns={columns}
         disableColumnMenu={true}
+        checkboxSelection
+        disableSelectionOnClick
         onRowClick={(params, _event, _details) => {
           console.log(params)
           const row = params.row
           setChart(row.song, row.chart)
         }}
+        onSelectionModelChange={(ids) => {
+          const selectedIDs = new Set(ids);
+          const selectedRowData = rows.filter((row) =>
+            selectedIDs.has(row.id)
+          );
+          const infos: ChartInfo[] = selectedRowData.map((row) => { 
+            const info: ChartInfo = {song: row.song, chart: row.chart};
+            return info
+          });
+          setSelectedCharts(infos);
+        }}
         components={{
-          Toolbar: GridToolbar,
+          Toolbar: CustomToolbar,
         }}
       />
+      <Button variant="contained" onClick={() => {addToPlaylist(selectedCharts)}} >add selected charts to the play list</Button>
     </div>
   )
 }

@@ -10,6 +10,7 @@ import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid'
 import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
+import { PlayListArea } from './components/playlist'
 
 const emptySong: Song = {
   title: "",
@@ -78,6 +79,8 @@ function getSong(filepath: string, setter: (song: Stream) => void) {
   })
 };
 
+type ChartInfo = {song: Song, chart: Chart};
+
 type SongInfoProps = { song: Song, chart: Chart };
 const SongInfo = ({ song, chart }: SongInfoProps) => {
   return (song === emptySong) ? <></> : <div>{`${song.title} (${chart.difficulty}) ${chart.level}`}</div>
@@ -96,6 +99,7 @@ function App() {
   const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [songs, setSongs] = useState<Song[]>([])
   const [banner, setBanner] = useState("")
+  const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
 
   function setChartInfo(song: Song, chart: Chart): void {
     audio.pause()
@@ -137,9 +141,12 @@ function App() {
               <SongInfo song={song} chart={chart} />
               <Loading />
             </Box>
+            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} />
           </Grid>
         </Grid>
-        <SongTable songs={songs} setChartInfo={setChartInfo} />
+        <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {
+          setPlaylist(playlist.concat(selecteds))
+        }}/>
       </Box>
     </Container>
   );
