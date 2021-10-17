@@ -240,7 +240,7 @@ function getScrollY(time: number, gimmicks: TimingInfo[], highSpeed: number, fix
 
 function getPassedArrows(time: number, sortedArrowTimes: number[]): number {
   const index = sortedArrowTimes.findIndex((t) => t > time);
-  return index == -1 ? sortedArrowTimes.length : index;
+  return index === -1 ? sortedArrowTimes.length : index;
 }
 
 function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
@@ -361,11 +361,6 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   useEffect(() => {
     console.log("player updated")
   }, []);
-  useEffect(() => {
-    if (scrollValue === 0) {
-      setPlaying(false);
-    }
-  }, [scrollValue, setPlaying]);
   return (
     <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center" width={canvasWidth}>
       {bpmIsFixed ? `BPM: ${fixedBPM}` : `BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
@@ -400,9 +395,9 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
         <IconButton onClick={() => {
           if (playing) {
-            setPlaying(false); audio.pause();
+            setPlaying(false);
           } else {
-            setPlaying(true); audio.play();
+            setPlaying(true);
           }
         }}>
           {playing ? <PauseCircleOutlineRoundedIcon fontSize="large" /> : <PlayCircleOutlineRoundedIcon fontSize="large" />}
@@ -597,14 +592,13 @@ const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpee
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; };
-const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: ChartAreaProps) => {
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing:boolean) => void};
+const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playing, setPlaying }: ChartAreaProps) => {
   const [fixedBPM, setFixedBPM] = useState(550);
   const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [rotationMode, setRotationMode] = useState<RotationMode>("off");
   const [highSpeed, setHighSpeed] = useState(1.0);
-  const [playing, setPlaying] = useState(false);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
@@ -616,9 +610,6 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome }: Cha
   useEffect(() => {
     console.log("chart area updated");
   }, []);
-  useEffect(() => {
-    setPlaying(false);
-  }, [audio]);
   return (
     <Grid container direction="row" spacing={2}>
       <Grid item width={canvasWidth+80}>
