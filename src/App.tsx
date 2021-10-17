@@ -143,7 +143,7 @@ function App() {
               <SongInfo song={song} chart={chart} />
 </Card>
             </Box>
-            <PlayListArea chartInfoList={playlist} setChartInfo={setChartInfo} audio={audio}/>
+            <PlayListArea chartInfoList={playlist} setChartInfoList={setPlaylist} setChartInfo={setChartInfo} audio={audio}/>
           </Grid>
         </Grid>
         <Loading />

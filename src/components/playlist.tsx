@@ -28,44 +28,50 @@ function getDifficultyColor(difficulty: string) {
   return "#ffffff"
 }
 
-type RowProps = { chartInfo: ChartInfo, clickHandler: (song: Song, chart: Chart, key: number) => void, id: number, playing: boolean }
-const Row = ({ chartInfo, clickHandler, id, playing }: RowProps) => {
+type RowProps = { chartInfo: ChartInfo, clickHandler: (song: Song, chart: Chart, key: number) => void, id: number, playing: boolean, deleteSelf: (id: number) => void }
+const Row = ({ chartInfo, clickHandler, id, playing, deleteSelf }: RowProps) => {
   const song = chartInfo.song
   const chart = chartInfo.chart
   const cardColor = playing ? "#dddddd" : "#ffffff"
   return (
     <Card sx={{ bgcolor: cardColor }}>
       <ListItem
-            secondaryAction={
-              <IconButton edge="end" aria-label="comments">
-                <DeleteIcon/>
-              </IconButton>
-            }
-            disablePadding
+        secondaryAction={
+          <IconButton edge="end" aria-label="comments" onClick={() => { deleteSelf(id) }}>
+            <DeleteIcon />
+          </IconButton>
+        }
+        disablePadding
       >
-      <ListItemButton onClick={() => {
-        clickHandler(song, chart, id)
-      }}>
-        {playing ? <ListItemIcon><PlayCircleOutlineIcon /></ListItemIcon> : <></>}
-        <ListItemText
-          primary={`${chart.level} ${song.title}`}
-          sx={{ bgcolor: getDifficultyColor(chart.difficulty) }}
-        />
-      </ListItemButton>
-</ListItem>
+        <ListItemButton onClick={() => {
+          clickHandler(song, chart, id)
+        }}>
+          {playing ? <ListItemIcon><PlayCircleOutlineIcon /></ListItemIcon> : <></>}
+          <ListItemText
+            primary={`${chart.level} ${song.title}`}
+            sx={{ bgcolor: getDifficultyColor(chart.difficulty) }}
+          />
+        </ListItemButton>
+      </ListItem>
     </Card>
   )
 }
 
 
-type PlayListAreaProps = { chartInfoList: ChartInfo[], setChartInfo: (song: Song, chart: Chart) => void, audio: HTMLAudioElement };
-export const PlayListArea = ({ chartInfoList, setChartInfo, audio }: PlayListAreaProps) => {
+type PlayListAreaProps = { chartInfoList: ChartInfo[], setChartInfoList: (chartInfoList: ChartInfo[]) => void, setChartInfo: (song: Song, chart: Chart) => void, audio: HTMLAudioElement };
+export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, audio }: PlayListAreaProps) => {
   async function onRowClick(song: Song, chart: Chart, id: number) {
     setChartInfo(song, chart)
     setCurrentId(id)
   };
+  function deleteSelf(id: number) {
+    console.log(id)
+    chartInfoList.splice(id, 1)
+    console.log(id)
+    setChartInfoList(chartInfoList)
+  }
   const [currentId, setCurrentId] = useState(0);
-  const rows = chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId} />)
+  const rows = chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId} deleteSelf={deleteSelf} />)
   useEffect(() => {
     audio.onended = (_event) => {
       const newId = currentId + 1
@@ -81,9 +87,15 @@ export const PlayListArea = ({ chartInfoList, setChartInfo, audio }: PlayListAre
         {`Play List (${chartInfoList.length === 0 ? 0 : currentId + 1}/${chartInfoList.length})`}
       </Typography>
       <Typography sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
-        <LoopIcon/>
-        <ShuffleIcon/>
-        <DeleteIcon/>
+        <IconButton edge="end" aria-label="comments" onClick={() => { }}>
+          <LoopIcon />
+        </IconButton>
+        <IconButton edge="end" aria-label="comments" onClick={() => { }}>
+          <ShuffleIcon />
+        </IconButton>
+        <IconButton edge="end" aria-label="comments" onClick={() => { setChartInfoList([]) }}>
+          <DeleteIcon />
+        </IconButton>
       </Typography>
       <List
         sx={{
