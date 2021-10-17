@@ -71,6 +71,19 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
     console.log(id)
     setChartInfoList(chartInfoList.concat())
   }
+  function shuffle() {
+    const array = chartInfoList.concat();
+    // Fisher-Yates
+    for (var i = array.length - 1; i > 0; i--) {
+      var r = Math.floor(Math.random() * (i + 1));
+      var tmp = array[i];
+      array[i] = array[r];
+      array[r] = tmp;
+    }
+    setChartInfoList(array);
+    const head = array[0];
+    onRowClick(head.song, head.chart, 0);
+  }
   const [currentId, setCurrentId] = useState(0);
   const rows = chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId} deleteSelf={deleteSelf} />)
   useEffect(() => {
@@ -98,7 +111,7 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
         >
           <LoopIcon />
         </ToggleButton>
-        <IconButton edge="end" aria-label="comments" onClick={() => { }}>
+        <IconButton edge="end" aria-label="comments" onClick={shuffle}>
           <ShuffleIcon />
         </IconButton>
         <IconButton edge="end" aria-label="comments" onClick={() => { setChartInfoList([]) }}>
