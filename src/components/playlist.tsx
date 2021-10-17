@@ -12,7 +12,7 @@ import LoopIcon from '@mui/icons-material/Loop';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useCallback, useEffect, useState } from 'react';
-import { ListItem, ToggleButton } from '@material-ui/core';
+import { Box, ListItem, ToggleButton } from '@material-ui/core';
 
 type ChartInfo = { song: Song, chart: Chart };
 
@@ -117,23 +117,29 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
         {`Play List (${chartInfoList.length === 0 ? 0 : currentId + 1}/${chartInfoList.length})`}
       </Typography>
-      <Typography sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
-        <ToggleButton
-          value="check"
-          selected={loopSelected}
-          onChange={() => {
-            setLoopSelected(!loopSelected);
-          }}
-        >
-          <LoopIcon />
-        </ToggleButton>
-        <IconButton edge="end" aria-label="comments" onClick={shuffle}>
-          <ShuffleIcon />
-        </IconButton>
-        <IconButton edge="end" aria-label="comments" onClick={deleteAll}>
-          <DeleteIcon />
-        </IconButton>
-      </Typography>
+      <Box sx={{ display: 'flex' }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <ToggleButton
+            value="check"
+            selected={loopSelected}
+            onChange={() => {
+              setLoopSelected(!loopSelected);
+            }}
+          >
+            <LoopIcon />
+          </ToggleButton>
+        </Box>
+        <Box sx={{ flexGrow: 1 }}>
+          <IconButton edge="end" aria-label="comments" onClick={shuffle}>
+            <ShuffleIcon />
+          </IconButton>
+        </Box>
+        <Box sx={{ flexGrow: 1 }}>
+          <IconButton edge="end" aria-label="comments" onClick={deleteAll}>
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      </Box>
       <List
         sx={{
           width: '100%',
