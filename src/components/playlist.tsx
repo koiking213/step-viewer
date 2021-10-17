@@ -105,7 +105,7 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
     onRowClick(head.song, head.chart, 0);
   }
   function deleteAll() {
-    setChartInfoList([]) 
+    setChartInfoList([])
     setCurrentId(0)
     setInPlaylist(false)
   }
