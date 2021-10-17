@@ -20,9 +20,10 @@ import Box from '@material-ui/core/Box';
 import TextField from '@mui/material/TextField';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
 import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
-import Switch from '@mui/material/Switch';
 
 
 import Card from '@mui/material/Card';
@@ -46,6 +47,7 @@ const arrowPosEpsilon = 1 / 192 * 4;
 
 type GimmickViewer = "detail" | "icon" | "off"
 type RotationMode = "mirror" | "left" | "right" | "off"
+type HighSpeedMode = "ordinal" | "bpm" | "fixed"
 
 type SoflanDetailProps = { soflans: Soflan[], highSpeed: number };
 const SoflanDetail = ({ soflans, highSpeed }: SoflanDetailProps) => {
@@ -274,8 +276,8 @@ function getBPM(division: number, gimmicks: TimingInfo[]): number {
   else return getBPM(division, gimmicks.slice(1));
 }
 
-type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
-const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, highSpeed, audio, setScrollValue, setBPM, fixedBPM, bpmIsFixed, sortedArrowTimes }: WindowProps) => {
+type WindowProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: HTMLAudioElement, setScrollValue: (val: number) => void, setBPM: (bpm: number) => void, fixedBPM: number, disableGimmick: boolean, sortedArrowTimes: number[] };
+const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, metronome, highSpeed, audio, setScrollValue, setBPM, fixedBPM, disableGimmick, sortedArrowTimes }: WindowProps) => {
   const [time, setTime] = useState(0);
   useTick((_delta) => {
     const newTime = audio.currentTime
@@ -303,8 +305,8 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
   });
   return (
     <Container>
-      {bpmIsFixed ? <></> : <Container key={0} position={[0, getScrollY(time + chartOffset, gimmicks, highSpeed, fixedBPM, bpmIsFixed)]}>{canvasMetaInfo}</Container>}
-      <Container key={1} position={[canvasLeftSpace, getScrollY(time + chartOffset, gimmicks, highSpeed, fixedBPM, bpmIsFixed)]}>{canvas}</Container>
+      {disableGimmick ? <></> : <Container key={0} position={[0, getScrollY(time + chartOffset, gimmicks, highSpeed, fixedBPM, disableGimmick)]}>{canvasMetaInfo}</Container>}
+      <Container key={1} position={[canvasLeftSpace, getScrollY(time + chartOffset, gimmicks, highSpeed, fixedBPM, disableGimmick)]}>{canvas}</Container>
     </Container>
   )
 };
@@ -312,30 +314,26 @@ const Window = ({ canvas, canvasMetaInfo, playing, gimmicks, chartOffset, clap, 
 type HighSpeedAreaProps = {
   highSpeed: number, setHighSpeed: (highSpeed: number) => void,
   fixedBPM: number, setFixedBPM: (bpm: number) => void,
-  bpmIsFixed: boolean, setBPMIsFixed: (bpmIsFixed: boolean) => void,
+  highSpeedMode: HighSpeedMode, setHighSpeedMode: (mode: HighSpeedMode) => void,
 };
-const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: HighSpeedAreaProps) => {
+const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, highSpeedMode, setHighSpeedMode }: HighSpeedAreaProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFixedBPM(parseInt(e.target.value));
   };
-  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBPMIsFixed(event.target.checked);
-  };
   return (
     <div>
+      <HighSpeedModeSelect setValue={setHighSpeedMode} />
       <Grid container direction="row" justifyContent="center" alignItems="center">
-        <div>High Speed: {highSpeed.toFixed(2)}</div>
         <IconButton onClick={() => { if (highSpeed > 0.25) setHighSpeed(highSpeed - 0.25) }}>
-          <RemoveIcon />
+          <ArrowLeftIcon />
         </IconButton>
+        <div>x {highSpeed.toFixed(2)}</div>
         <IconButton onClick={() => { setHighSpeed(highSpeed + 0.25) }}>
-          <AddIcon />
+          <ArrowRightIcon />
         </IconButton>
       </Grid>
       <Grid container direction="row" justifyContent="center" alignItems="center">
-        <div>fixed BPM:</div>
-        <Switch checked={bpmIsFixed} onChange={handleSwitchChange} />
-        <TextField id="fixed-BPM" label="BPM" type="number" variant="standard"
+        <TextField disabled={highSpeedMode === "ordinal"} id="fixed-BPM" label="BPM" type="number" variant="standard"
           onChange={handleChange} value={fixedBPM}
         />
       </Grid>
@@ -354,8 +352,8 @@ const StepZone = () => {
   )
 }
 
-type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[] };
-const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes }: PlayerProps) => {
+type PlayerProps = { canvas: JSX.Element; canvasMetaInfo: JSX.Element; playing: boolean; setPlaying: (playing: boolean) => void; gimmicks: TimingInfo[], chartOffset: number; clap: any, metronome: any, highSpeed: number, audio: any, fixedBPM: number, bpmIsFixed: boolean, sortedArrowTimes: number[], disableGimmick: boolean };
+const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOffset, clap, metronome, highSpeed, audio, fixedBPM, bpmIsFixed, sortedArrowTimes, disableGimmick }: PlayerProps) => {
   const [scrollValue, setScrollValue] = useState(100);
   const [bpm, setBPM] = useState(0);
   useEffect(() => {
@@ -363,7 +361,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
   }, []);
   return (
     <Grid container direction="column" columnSpacing={1} justifyContent="center" alignItems="center" width={canvasWidth}>
-      {bpmIsFixed ? `BPM: ${fixedBPM}` : `BPM: ${bpm} * ${highSpeed} = ${bpm * highSpeed}`}
+      {disableGimmick ? `BPM: ${fixedBPM}` : `BPM: ${bpm.toFixed(2)} * ${highSpeed.toFixed(2)} = ${(bpm * highSpeed).toFixed(2)}`}
       <Grid container direction="row" columnSpacing={1} justifyContent="center" alignItems="center">
         <Grid item xs={11} >
           <Stage width={canvasWidth} height={500}>
@@ -381,7 +379,7 @@ const Player = ({ canvas, canvasMetaInfo, playing, setPlaying, gimmicks, chartOf
               setScrollValue={setScrollValue}
               setBPM={setBPM}
               fixedBPM={fixedBPM}
-              bpmIsFixed={bpmIsFixed}
+              disableGimmick={disableGimmick}
               sortedArrowTimes={sortedArrowTimes}
             />
           </Stage>
@@ -418,6 +416,40 @@ const ChartSlider = ({ audio, scrollValue, setScrollValue }: ChartSlicerProps) =
     audio.currentTime = audio.duration * (100 - newValue) / 100;
   }
   return <Slider aria-label="Chart" orientation="vertical" value={scrollValue} onChange={handleChange} />
+}
+
+type HighSpeedModeSelectProps= { setValue: (value: HighSpeedMode) => void };
+const HighSpeedModeSelect = ({ setValue }: HighSpeedModeSelectProps) => {
+  const handler = (event: React.ChangeEvent<HTMLInputElement>, value: string) => {
+    switch (value) {
+      case "ordinal":
+        setValue("ordinal");
+        break;
+      case "bpm":
+        setValue("bpm");
+        break;
+      case "fixed":
+        setValue("fixed");
+        break;
+      default:
+        break;
+    }
+  }
+  return (
+    <FormControl component="fieldset">
+      <FormLabel component="legend">rotation option</FormLabel>
+      <RadioGroup
+        aria-label="highSpeed"
+        defaultValue="ordinal"
+        name="highspeed-mode"
+        onChange={handler}
+      >
+        <FormControlLabel value="ordinal" control={<Radio />} label="ordinal" />
+        <FormControlLabel value="bpm" control={<Radio />} label="fixed BPM" />
+        <FormControlLabel value="fixed" control={<Radio />} label="fixed, no gimmick" />
+      </RadioGroup>
+    </FormControl>
+  );
 }
 
 type GimmickViewerSelectProps = { setValue: (value: GimmickViewer) => void };
@@ -519,8 +551,10 @@ const PlaySpeedArea = ({audio}: PlaySpeedAreaProps) => {
 }
 
 type SettingAreaProps = {
+  setHighSpeedMode: (val: HighSpeedMode) => void;
   setRotationMode: (val: RotationMode) => void;
   setGimmickViewer: (val: GimmickViewer) => void,
+  highSpeedMode: HighSpeedMode,
   highSpeed: number,
   setHighSpeed: (highSpeed: number) => void,
   audio: HTMLAudioElement,
@@ -528,15 +562,13 @@ type SettingAreaProps = {
   metronome: HTMLAudioElement,
   fixedBPM: number,
   setFixedBPM: (fixedBPM: number) => void,
-  bpmIsFixed: boolean,
-  setBPMIsFixed: (bpmIsFixed: boolean) => void
 };
-const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM, bpmIsFixed, setBPMIsFixed }: SettingAreaProps) => {
+const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, highSpeedMode, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
         <CardContent>
-          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} fixedBPM={fixedBPM} setFixedBPM={setFixedBPM} bpmIsFixed={bpmIsFixed} setBPMIsFixed={setBPMIsFixed} />
+          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} fixedBPM={fixedBPM} setFixedBPM={setFixedBPM} highSpeedMode={highSpeedMode} setHighSpeedMode={setHighSpeedMode} />
         </CardContent>
       </Card>
       <Card variant="outlined">
@@ -592,16 +624,19 @@ const SettingArea = ({ setRotationMode, setGimmickViewer, highSpeed, setHighSpee
   )
 }
 
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing:boolean) => void};
-const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playing, setPlaying }: ChartAreaProps) => {
-  const [fixedBPM, setFixedBPM] = useState(550);
-  const [bpmIsFixed, setBPMIsFixed] = useState(false);
+// TODO: 引数を減らす
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing:boolean) => void; highestBPM: number};
+const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playing, setPlaying, highestBPM }: ChartAreaProps) => {
+  //const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [rotationMode, setRotationMode] = useState<RotationMode>("off");
+  const [highSpeedMode, setHighSpeedMode] = useState<HighSpeedMode>("ordinal");
+  const [fixedBPM, setFixedBPM] = useState(550);
   const [highSpeed, setHighSpeed] = useState(1.0);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
-  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={highSpeed} fixedBPM={fixedBPM} bpmIsFixed={bpmIsFixed} />;
-  const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={highSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
+  const effectiveHighSpeed = highSpeedMode==="bpm" ? fixedBPM / highestBPM : highSpeed
+  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} />;
+  const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={effectiveHighSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
   const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
   useEffect(() => {
     const arrowStream = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
@@ -622,10 +657,11 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playi
           chartOffset={chartOffset}
           clap={clap}
           metronome={metronome}
-          highSpeed={highSpeed}
+          highSpeed={effectiveHighSpeed}
           setPlaying={setPlaying}
           fixedBPM={fixedBPM}
-          bpmIsFixed={bpmIsFixed}
+          bpmIsFixed={highSpeedMode !== "ordinal"}
+          disableGimmick={highSpeedMode === "fixed"}
           sortedArrowTimes={sortedArrowTimes}
         />
       </Grid>
@@ -640,8 +676,8 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playi
           metronome={metronome}
           fixedBPM={fixedBPM}
           setFixedBPM={setFixedBPM}
-          bpmIsFixed={bpmIsFixed}
-          setBPMIsFixed={setBPMIsFixed}
+          highSpeedMode={highSpeedMode}
+          setHighSpeedMode={setHighSpeedMode}
         />
       </Grid>
     </Grid>

@@ -121,12 +121,13 @@ function App() {
     f();
   }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
+  const highestBPM = parseInt((song.bpm.split('-')[1] || song.bpm.split('-')[0]), 10)
   return (
     <Container>
       <Box sx={{ my: 4 }}>
         <Grid container direction="row" spacing={2}>
           <Grid item >
-            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} playing={playing} 
+            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} playing={playing} highestBPM={highestBPM}
             setPlaying={(playing: boolean) => {
               setPlaying(playing);
               if (playing) {
