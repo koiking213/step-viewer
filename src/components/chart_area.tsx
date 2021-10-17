@@ -174,7 +174,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
   const rotate = (dir: Direction) => {
     switch (rotationMode) {
       case "off": return dir;
-      case "mirror": 
+      case "mirror":
         switch (dir) {
           case "left": return "right";
           case "right": return "left";
@@ -198,7 +198,7 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           case "left": return "up";
         }
         break;
-      }
+    }
   };
   const arrows = stream.stream
     .map((division) => {
@@ -214,13 +214,13 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
               ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
               (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier}/>
+            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier} />
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier}/>;
+          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} />;
         } else {
           return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier}/>
+            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} />
           );
         }
       });
@@ -418,7 +418,7 @@ const ChartSlider = ({ audio, scrollValue, setScrollValue }: ChartSlicerProps) =
   return <Slider aria-label="Chart" orientation="vertical" value={scrollValue} onChange={handleChange} />
 }
 
-type HighSpeedModeSelectProps= { setValue: (value: HighSpeedMode) => void };
+type HighSpeedModeSelectProps = { setValue: (value: HighSpeedMode) => void };
 const HighSpeedModeSelect = ({ setValue }: HighSpeedModeSelectProps) => {
   const handler = (event: React.ChangeEvent<HTMLInputElement>, value: string) => {
     switch (value) {
@@ -526,27 +526,27 @@ const RotationModeSelect = ({ setValue }: RotationModeSelectProps) => {
   );
 }
 
-type PlaySpeedAreaProps = {audio: HTMLAudioElement};
-const PlaySpeedArea = ({audio}: PlaySpeedAreaProps) => {
+type PlaySpeedAreaProps = { audio: HTMLAudioElement };
+const PlaySpeedArea = ({ audio }: PlaySpeedAreaProps) => {
   const [playSpeed, setPlaySpeed] = useState(1.0);
   return (
-      <Grid container direction="row" justifyContent="center" alignItems="center">
-        <div>Play Speed: {playSpeed.toFixed(2)}</div>
-        <IconButton onClick={() => { 
-          if (playSpeed > 0.1) {
-            setPlaySpeed(playSpeed - 0.1);
-            audio.playbackRate = playSpeed
-          } 
-          }}>
-          <RemoveIcon />
-        </IconButton>
-        <IconButton onClick={() => { 
-          setPlaySpeed(playSpeed + 0.1)
+    <Grid container direction="row" justifyContent="center" alignItems="center">
+      <div>Play Speed: {playSpeed.toFixed(2)}</div>
+      <IconButton onClick={() => {
+        if (playSpeed > 0.1) {
+          setPlaySpeed(playSpeed - 0.1);
           audio.playbackRate = playSpeed
-          }}>
-          <AddIcon />
-        </IconButton>
-      </Grid>
+        }
+      }}>
+        <RemoveIcon />
+      </IconButton>
+      <IconButton onClick={() => {
+        setPlaySpeed(playSpeed + 0.1)
+        audio.playbackRate = playSpeed
+      }}>
+        <AddIcon />
+      </IconButton>
+    </Grid>
   )
 }
 
@@ -625,7 +625,7 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
 }
 
 // TODO: 引数を減らす
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing:boolean) => void; highestBPM: number};
+type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing: boolean) => void; highestBPM: number };
 const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playing, setPlaying, highestBPM }: ChartAreaProps) => {
   //const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
@@ -634,7 +634,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playi
   const [fixedBPM, setFixedBPM] = useState(550);
   const [highSpeed, setHighSpeed] = useState(1.0);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
-  const effectiveHighSpeed = highSpeedMode==="bpm" ? fixedBPM / highestBPM : highSpeed
+  const effectiveHighSpeed = highSpeedMode === "bpm" ? fixedBPM / highestBPM : highSpeed
   const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} />;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={effectiveHighSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
   const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
@@ -647,7 +647,7 @@ const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playi
   }, []);
   return (
     <Grid container direction="row" spacing={2}>
-      <Grid item width={canvasWidth+80}>
+      <Grid item width={canvasWidth + 80}>
         <Player
           canvas={canvas}
           canvasMetaInfo={canvasMetaInfo}

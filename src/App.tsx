@@ -105,7 +105,7 @@ function App() {
     setIsLoading(false)
     setPlaying(true)
     newAudio.play();
-    return 
+    return
   }
   useEffect(() => {
     const f = async () => {
@@ -128,23 +128,23 @@ function App() {
         <Grid container direction="row" spacing={2}>
           <Grid item >
             <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} playing={playing} highestBPM={highestBPM}
-            setPlaying={(playing: boolean) => {
-              setPlaying(playing);
-              if (playing) {
-                audio.play();
-              } else {
-                audio.pause();
-              }
-            }} />
+              setPlaying={(playing: boolean) => {
+                setPlaying(playing);
+                if (playing) {
+                  audio.play();
+                } else {
+                  audio.pause();
+                }
+              }} />
           </Grid>
           <Grid item >
             <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" alt="banner" />
             <Box display="flex" justifyContent="center" m={1} width="300" >
-            <Card sx={{display:"inline-block", width:300}} >
-              <SongInfo song={song} chart={chart} />
-</Card>
+              <Card sx={{ display: "inline-block", width: 300 }} >
+                <SongInfo song={song} chart={chart} />
+              </Card>
             </Box>
-            <PlayListArea chartInfoList={playlist} setChartInfoList={setPlaylist} setChartInfo={setChartInfo} audio={audio}/>
+            <PlayListArea chartInfoList={playlist} setChartInfoList={setPlaylist} setChartInfo={setChartInfo} audio={audio} />
           </Grid>
         </Grid>
         <Loading />

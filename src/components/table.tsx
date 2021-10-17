@@ -3,9 +3,9 @@ import { Song, Chart } from '../types/index'
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { Button } from "@material-ui/core";
 
-type ChartInfo = {song: Song, chart: Chart};
+type ChartInfo = { song: Song, chart: Chart };
 type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void, addToPlaylist: (info: ChartInfo[]) => void }
-export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist}: SongTableProps) => {
+export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist }: SongTableProps) => {
   const [selectedCharts, setSelectedCharts] = useState<ChartInfo[]>([]);
   const columns: GridColDef[] = [
     {
@@ -36,8 +36,8 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist}: SongT
       width: 100,
       type: "string",
       sortComparator: (v1, v2, param1, param2) => {
-        const bpm1:string = param1.api.getCellValue(param1.id, 'bpm')
-        const bpm2:string = param2.api.getCellValue(param2.id, 'bpm')
+        const bpm1: string = param1.api.getCellValue(param1.id, 'bpm')
+        const bpm2: string = param2.api.getCellValue(param2.id, 'bpm')
         console.log(bpm1, typeof bpm1)
         console.log(bpm2, typeof bpm2)
         return (parseInt((bpm1.split('-')[1] || bpm1.split('-')[0]), 10) -
@@ -114,8 +114,8 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist}: SongT
           const selectedRowData = rows.filter((row) =>
             selectedIDs.has(row.id)
           );
-          const infos: ChartInfo[] = selectedRowData.map((row) => { 
-            const info: ChartInfo = {song: row.song, chart: row.chart};
+          const infos: ChartInfo[] = selectedRowData.map((row) => {
+            const info: ChartInfo = { song: row.song, chart: row.chart };
             return info
           });
           setSelectedCharts(infos);
@@ -124,7 +124,7 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist}: SongT
           Toolbar: GridToolbar,
         }}
       />
-      <Button variant="contained" onClick={() => {addToPlaylist(selectedCharts)}} >add selected charts to the play list</Button>
+      <Button variant="contained" onClick={() => { addToPlaylist(selectedCharts) }} >add selected charts to the play list</Button>
     </div>
   )
 }
