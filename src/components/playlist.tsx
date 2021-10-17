@@ -68,11 +68,12 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
     console.log(id)
     chartInfoList.splice(id, 1)
     console.log(id)
-    setChartInfoList(chartInfoList)
+    setChartInfoList(chartInfoList.concat())
   }
   const [currentId, setCurrentId] = useState(0);
   const rows = chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId} deleteSelf={deleteSelf} />)
   useEffect(() => {
+    console.log("playlist updated")
     audio.onended = (_event) => {
       const newId = currentId + 1
       if (newId < chartInfoList.length) {
