@@ -590,7 +590,7 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
             </Grid>
             <Grid container direction="row" columnSpacing={1}>
               <Grid item xs={3}>
-                hand clap:
+                clap:
               </Grid>
               <Grid item xs={3}>
                 <VolumeControl audio={clap} />
@@ -598,7 +598,7 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
             </Grid>
             <Grid container direction="row" columnSpacing={1}>
               <Grid item xs={3}>
-                metronome:
+                beat:
               </Grid>
               <Grid item xs={3}>
                 <VolumeControl audio={metronome} />
