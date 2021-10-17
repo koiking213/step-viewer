@@ -11,7 +11,7 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import LoopIcon from '@mui/icons-material/Loop';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ListItem, ToggleButton } from '@material-ui/core';
 
 type ChartInfo = { song: Song, chart: Chart };
@@ -74,11 +74,11 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
   const [loopSelected, setLoopSelected] = useState(false);
   const [currentId, setCurrentId] = useState(0);
   const [inPlaylist, setInPlaylist] = useState(false);
-  async function onRowClick(song: Song, chart: Chart, id: number) {
+  const onRowClick = useCallback(async (song: Song, chart: Chart, id: number) => {
     setChartInfo(song, chart)
     setCurrentId(id)
     setInPlaylist(true)
-  };
+  }, [setChartInfo]);
   function deleteSelf(id: number) {
     console.log(id)
     chartInfoList.splice(id, 1)
@@ -119,7 +119,7 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
         onRowClick(row.song, row.chart, newId);
       }
     }
-  }, [audio, chartInfoList, loopSelected]);
+  }, [audio, chartInfoList, loopSelected, currentId, onRowClick]);
   return (
     <Card>
       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
