@@ -12,7 +12,7 @@ import LoopIcon from '@mui/icons-material/Loop';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from 'react';
-import { ListItem } from '@material-ui/core';
+import { ListItem, ToggleButton } from '@material-ui/core';
 
 type ChartInfo = { song: Song, chart: Chart };
 
@@ -60,6 +60,7 @@ const Row = ({ chartInfo, clickHandler, id, playing, deleteSelf }: RowProps) => 
 
 type PlayListAreaProps = { chartInfoList: ChartInfo[], setChartInfoList: (chartInfoList: ChartInfo[]) => void, setChartInfo: (song: Song, chart: Chart) => void, audio: HTMLAudioElement };
 export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, audio }: PlayListAreaProps) => {
+  const [loopSelected, setLoopSelected] = useState(false);
   async function onRowClick(song: Song, chart: Chart, id: number) {
     setChartInfo(song, chart)
     setCurrentId(id)
@@ -75,22 +76,28 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
   useEffect(() => {
     console.log("playlist updated")
     audio.onended = (_event) => {
-      const newId = currentId + 1
+      const newId = loopSelected && (currentId >= chartInfoList.length - 1) ? 0 : currentId + 1
       if (newId < chartInfoList.length) {
         const row = chartInfoList[newId];
         onRowClick(row.song, row.chart, newId);
       }
     }
-  }, [audio, chartInfoList]);
+  }, [audio, chartInfoList, loopSelected]);
   return (
     <Card>
       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
         {`Play List (${chartInfoList.length === 0 ? 0 : currentId + 1}/${chartInfoList.length})`}
       </Typography>
       <Typography sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
-        <IconButton edge="end" aria-label="comments" onClick={() => { }}>
+        <ToggleButton
+          value="check"
+          selected={loopSelected}
+          onChange={() => {
+            setLoopSelected(!loopSelected);
+          }}
+        >
           <LoopIcon />
-        </IconButton>
+        </ToggleButton>
         <IconButton edge="end" aria-label="comments" onClick={() => { }}>
           <ShuffleIcon />
         </IconButton>
