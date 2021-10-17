@@ -20,7 +20,7 @@ function getDifficultyColor(difficulty: string) {
   switch (difficulty) {
     case "Beginner": return "#afeeee"
     case "Easy": return "#ffe4c4"
-    case "Medium": return "#ffa07a"
+    case "Medium": return "#ffa0a0"
     case "Hard": return "#98fb98"
     case "Challenge": return "#ee82ee"
     case "Edit": return "#a9a9a9"
@@ -28,23 +28,12 @@ function getDifficultyColor(difficulty: string) {
   return "#ffffff"
 }
 
-function getDifficultyColorSelected(difficulty: string) {
-  switch (difficulty) {
-    case "Beginner": return "#8fcece"
-    case "Easy": return "#dfc4a4"
-    case "Medium": return "#df805a"
-    case "Hard": return "#78db78"
-    case "Challenge": return "#ce62ce"
-    case "Edit": return "#898989"
-  }
-  return "#dddddd"
-}
-
 type RowProps = { chartInfo: ChartInfo, clickHandler: (song: Song, chart: Chart, key: number) => void, id: number, playing: boolean, deleteSelf: (id: number) => void }
 const Row = ({ chartInfo, clickHandler, id, playing, deleteSelf }: RowProps) => {
   const song = chartInfo.song
   const chart = chartInfo.chart
-  const cardColor = playing ? getDifficultyColorSelected(chart.difficulty) : getDifficultyColor(chart.difficulty)
+  const cardColor = playing ? "#dddddd" : "#ffffff"
+  const levelColor = getDifficultyColor(chart.difficulty)
   return (
     <Card sx={{ bgcolor: cardColor }}>
       <ListItem
@@ -59,8 +48,11 @@ const Row = ({ chartInfo, clickHandler, id, playing, deleteSelf }: RowProps) => 
           clickHandler(song, chart, id)
         }}>
           {playing ? <ListItemIcon><PlayCircleOutlineIcon /></ListItemIcon> : <></>}
+          <ListItemText sx={{ bgcolor: levelColor, maxWidth: 22, minWidth: 22, m: 1, textAlign: 'center' }}
+            primary={`${chart.level}`}
+          />
           <ListItemText
-            primary={`${chart.level} ${song.title}`}
+            primary={`${song.title}`}
           />
         </ListItemButton>
       </ListItem>
