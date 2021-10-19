@@ -1,7 +1,7 @@
 import './App.css';
 
 import { Stream, Gimmick, Song, Chart, ChartContent } from './types/index'
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
@@ -88,7 +88,9 @@ function App() {
   const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream, gimmick: emptyGimmick, audio: audio};
   const [chartContent, setChartContent] = useState(emptyChartContent);
 
-  async function setChartInfo(song: Song, chart: Chart): Promise<void> {
+  const setChartInfo = useCallback(async (song: Song, chart: Chart) => {
+    console.log("setChartInfo:")
+    console.log(audio)
     audio.pause()
     setIsLoading(true)
     
@@ -101,14 +103,15 @@ function App() {
     const gimmick = await gimmickPromise;
     setBanner(banner);
     setChartContent({song:song, chart:chart, stream:stream, gimmick:gimmick, audio:newAudio})
+    console.log(newAudio)
     setAudio(newAudio)
     setSong(song)
     setChart(chart)
     setIsLoading(false)
     setPlaying(true)
     newAudio.play();
-    return
-  }
+  }, [audio]);
+
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
@@ -153,6 +156,7 @@ function App() {
         </Grid>
         <Loading />
         <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {
+          console.log("addToPlaylist")
           setPlaylist(playlist.concat(selecteds))
         }} />
       </Box>

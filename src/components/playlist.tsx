@@ -101,7 +101,10 @@ export const PlayListArea = ({ chartInfoList, setChartInfoList, setChartInfo, au
     setCurrentId(0)
     setInPlaylist(false)
   }
-  const rows = chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId && inPlaylist} deleteSelf={deleteSelf} />)
+  const [rows, setRows] = useState<JSX.Element[]>([]);
+  useEffect(() => {
+    setRows(chartInfoList.map((info, i) => <Row chartInfo={info} clickHandler={onRowClick} id={i} key={i} playing={i === currentId && inPlaylist} deleteSelf={deleteSelf} />))
+  }, [chartInfoList, onRowClick])
   useEffect(() => {
     console.log("playlist updated")
     audio.onended = (_event) => {
