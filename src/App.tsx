@@ -1,6 +1,6 @@
 import './App.css';
 
-import { Stream, Gimmick, Song, Chart } from './types/index'
+import { Stream, Gimmick, Song, Chart, ChartContent } from './types/index'
 import { useEffect, useState } from "react"
 
 import { Dropbox } from 'dropbox'
@@ -75,8 +75,6 @@ const SongInfo = ({ song, chart }: SongInfoProps) => {
 function App() {
   const emptyStream: Stream = JSON.parse('{"stream":[], "cost":-1}');
   const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
-  const [stream, setStream] = useState(emptyStream)
-  const [gimmick, setGimmick] = useState(emptyGimmick)
   const [audio, setAudio] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [isLoading, setIsLoading] = useState(false)
   const [song, setSong] = useState(emptySong)
@@ -87,18 +85,22 @@ function App() {
   const [banner, setBanner] = useState("")
   const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
   const [playing, setPlaying] = useState(false);
+  const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream, gimmick: emptyGimmick, audio: audio};
+  const [chartContent, setChartContent] = useState(emptyChartContent);
 
   async function setChartInfo(song: Song, chart: Chart): Promise<void> {
     audio.pause()
     setIsLoading(true)
-    setStream(await getSong(`/${song.dir_name}/${chart.difficulty}.json`));
-    setGimmick(await getGimmick(`/${song.dir_name}/gimmick.json`));
-    if (song.banner !== "") {
-      setBanner(await getBanner(`/${song.dir_name}/${song.banner}`));
-    } else {
-      setBanner("")
-    }
-    const newAudio = await getAudio(`/${song.dir_name}/${song.music.path}`);
+    
+    const newAudioPromise = getAudio(`/${song.dir_name}/${song.music.path}`);
+    const streamPromise = getSong(`/${song.dir_name}/${chart.difficulty}.json`);
+    const gimmickPromise = getGimmick(`/${song.dir_name}/gimmick.json`);
+    const banner = song.banner === "" ? "" : await getBanner(`/${song.dir_name}/${song.banner}`);
+    const newAudio = await newAudioPromise;
+    const stream = await streamPromise;
+    const gimmick = await gimmickPromise;
+    setBanner(banner);
+    setChartContent({song:song, chart:chart, stream:stream, gimmick:gimmick, audio:newAudio})
     setAudio(newAudio)
     setSong(song)
     setChart(chart)
@@ -110,24 +112,26 @@ function App() {
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
-      setClap(await getAudio("/Clap-1.wav"));
-      setMetronome(await getAudio("/metronome.ogg"));
-      const blob = await downloadFromDropbox("/songs.json");
+      const clap = getAudio("/Clap-1.wav");
+      const metronome = getAudio("/metronome.ogg");
+      const songsJson = downloadFromDropbox("/songs.json");
+      const blob = await songsJson
       const text = await blob.text();
       const songs: Song[] = JSON.parse(text)
       setSongs(songs)
+      setClap(await clap);
+      setMetronome(await metronome);
       setIsLoading(false);
     };
     f();
   }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
-  const highestBPM = parseInt((song.bpm.split('-')[1] || song.bpm.split('-')[0]), 10)
   return (
     <Container>
       <Box sx={{ my: 4 }}>
         <Grid container direction="row" spacing={2}>
           <Grid item >
-            <ChartArea stream={stream} gimmick={gimmick} audio={audio} chartOffset={song.music.offset} clap={clap} metronome={metronome} playing={playing} highestBPM={highestBPM}
+            <ChartArea chartContent={chartContent} clap={clap} metronome={metronome} playing={playing}
               setPlaying={(playing: boolean) => {
                 setPlaying(playing);
                 if (playing) {

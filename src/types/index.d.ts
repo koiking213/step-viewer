@@ -1,3 +1,4 @@
+import { AudioHTMLAttributes } from "react"
 
 export type Direction = "up" | "right" | "left" | "down"
 
@@ -64,3 +65,11 @@ export type TimingInfo = {
   division: number;
   value: number;
 };
+
+export type ChartContent = {
+  song: Song;
+  chart: Chart;
+  stream: Stream;
+  gimmick: Gimmick;
+  audio: HTMLAudioElement;
+}

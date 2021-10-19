@@ -7,7 +7,7 @@ import {
   Text,
 } from "@inlet/react-pixi";
 import { settings, SCALE_MODES, Texture, BaseTexture, Rectangle } from "pixi.js";
-import { Stream, Gimmick, Stop, Soflan, TimingInfo, Direction } from "../types/index";
+import { Stream, Gimmick, Stop, Soflan, TimingInfo, Direction, ChartContent } from "../types/index";
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
 import Grid from '@material-ui/core/Grid'
@@ -625,9 +625,15 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
 }
 
 // TODO: 引数を減らす
-type ChartAreaProps = { stream: Stream; gimmick: Gimmick; audio: any; chartOffset: number; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing: boolean) => void; highestBPM: number };
-const ChartArea = ({ stream, gimmick, audio, chartOffset, clap, metronome, playing, setPlaying, highestBPM }: ChartAreaProps) => {
+type ChartAreaProps = { chartContent:ChartContent; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing: boolean) => void; };
+const ChartArea = ({ chartContent, clap, metronome, playing, setPlaying }: ChartAreaProps) => {
   //const [bpmIsFixed, setBPMIsFixed] = useState(false);
+  const stream = chartContent.stream;
+  const gimmick = chartContent.gimmick;
+  const audio = chartContent.audio;
+  const song = chartContent.song;
+  const chartOffset = song.music.offset;
+  const highestBPM = parseInt((song.bpm.split('-')[1] || song.bpm.split('-')[0]), 10)
   const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
   const [rotationMode, setRotationMode] = useState<RotationMode>("off");
   const [highSpeedMode, setHighSpeedMode] = useState<HighSpeedMode>("ordinal");
