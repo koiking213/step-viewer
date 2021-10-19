@@ -625,12 +625,11 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
 }
 
 // TODO: 引数を減らす
-type ChartAreaProps = { chartContent:ChartContent; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing: boolean) => void; };
-const ChartArea = ({ chartContent, clap, metronome, playing, setPlaying }: ChartAreaProps) => {
+type ChartAreaProps = { chartContent:ChartContent; audio: HTMLAudioElement; clap: HTMLAudioElement; metronome: HTMLAudioElement; playing: boolean; setPlaying: (playing: boolean) => void; };
+const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }: ChartAreaProps) => {
   //const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const stream = chartContent.stream;
   const gimmick = chartContent.gimmick;
-  const audio = chartContent.audio;
   const song = chartContent.song;
   const chartOffset = song.music.offset;
   const highestBPM = parseInt((song.bpm.split('-')[1] || song.bpm.split('-')[0]), 10)

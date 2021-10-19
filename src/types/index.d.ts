@@ -71,5 +71,4 @@ export type ChartContent = {
   chart: Chart;
   stream: Stream;
   gimmick: Gimmick;
-  audio: HTMLAudioElement;
 }

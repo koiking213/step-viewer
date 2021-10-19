@@ -85,7 +85,7 @@ function App() {
   const [banner, setBanner] = useState("")
   const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
   const [playing, setPlaying] = useState(false);
-  const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream, gimmick: emptyGimmick, audio: audio};
+  const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream, gimmick: emptyGimmick};
   const [chartContent, setChartContent] = useState(emptyChartContent);
 
   const setChartInfo = useCallback(async (song: Song, chart: Chart) => {
@@ -97,19 +97,18 @@ function App() {
     const newAudioPromise = getAudio(`/${song.dir_name}/${song.music.path}`);
     const streamPromise = getSong(`/${song.dir_name}/${chart.difficulty}.json`);
     const gimmickPromise = getGimmick(`/${song.dir_name}/gimmick.json`);
-    const banner = song.banner === "" ? "" : await getBanner(`/${song.dir_name}/${song.banner}`);
-    const newAudio = await newAudioPromise;
-    const stream = await streamPromise;
-    const gimmick = await gimmickPromise;
-    setBanner(banner);
-    setChartContent({song:song, chart:chart, stream:stream, gimmick:gimmick, audio:newAudio})
-    console.log(newAudio)
-    setAudio(newAudio)
+    const banner = song.banner === "" ? "" : getBanner(`/${song.dir_name}/${song.banner}`);
     setSong(song)
     setChart(chart)
-    setIsLoading(false)
+    const stream = await streamPromise;
+    const gimmick = await gimmickPromise;
+    setChartContent({song:song, chart:chart, stream:stream, gimmick:gimmick})
+    const newAudio = await newAudioPromise;
+    setAudio(newAudio)
     setPlaying(true)
+    setBanner(await banner);
     newAudio.play();
+    setIsLoading(false)
   }, [audio]);
 
   useEffect(() => {
@@ -134,7 +133,7 @@ function App() {
       <Box sx={{ my: 4 }}>
         <Grid container direction="row" spacing={2}>
           <Grid item >
-            <ChartArea chartContent={chartContent} clap={clap} metronome={metronome} playing={playing}
+            <ChartArea chartContent={chartContent} audio={audio} clap={clap} metronome={metronome} playing={playing}
               setPlaying={(playing: boolean) => {
                 setPlaying(playing);
                 if (playing) {
