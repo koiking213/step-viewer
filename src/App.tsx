@@ -22,7 +22,8 @@ const emptySong: Song = {
     path: "",
     offset: 0
   },
-  banner: ""
+  banner: "",
+  timestamp: "",
 }
 
 const emptyChart: Chart = {
@@ -36,6 +37,7 @@ const emptyChart: Chart = {
   chaos: 0
 }
 
+const dir_prefix = "";
 
 async function downloadFromDropbox(filepath: string) {
   const dbx = new Dropbox({ accessToken: process.env.REACT_APP_DROPBOX_TOKEN });
@@ -94,10 +96,10 @@ function App() {
     audio.pause()
     setIsLoading(true)
     
-    const newAudioPromise = getAudio(`/${song.dir_name}/${song.music.path}`);
-    const streamPromise = getSong(`/${song.dir_name}/${chart.difficulty}.json`);
-    const gimmickPromise = getGimmick(`/${song.dir_name}/gimmick.json`);
-    const banner = song.banner === "" ? "" : getBanner(`/${song.dir_name}/${song.banner}`);
+    const newAudioPromise = getAudio(`/${dir_prefix}${song.dir_name}/${song.music.path}`);
+    const streamPromise = getSong(`/${dir_prefix}${song.dir_name}/${chart.difficulty}.json`);
+    const gimmickPromise = getGimmick(`/${dir_prefix}${song.dir_name}/gimmick.json`);
+    const banner = song.banner === "" ? "" : getBanner(`/${dir_prefix}${song.dir_name}/${song.banner}`);
     setSong(song)
     setChart(chart)
     const stream = await streamPromise;
@@ -116,7 +118,7 @@ function App() {
       setIsLoading(true);
       const clap = getAudio("/Clap-1.wav");
       const metronome = getAudio("/metronome.ogg");
-      const songsJson = downloadFromDropbox("/songs.json");
+      const songsJson = downloadFromDropbox(`/${dir_prefix}songs.json`);
       const blob = await songsJson
       const text = await blob.text();
       const songs: Song[] = JSON.parse(text)

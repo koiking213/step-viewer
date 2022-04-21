@@ -5,7 +5,7 @@ import { Button } from "@material-ui/core";
 
 type ChartInfo = { song: Song, chart: Chart };
 type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void, addToPlaylist: (info: ChartInfo[]) => void }
-export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist }: SongTableProps) => {
+export const SongTable = ({ songs, setChartInfo, addToPlaylist }: SongTableProps) => {
   const [selectedCharts, setSelectedCharts] = useState<ChartInfo[]>([]);
   const columns: GridColDef[] = [
     {
@@ -74,6 +74,12 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist }: Song
       width: 90,
       type: "number",
     },
+    {
+      field: "timestamp",
+      headerName: "update",
+      width: 180,
+      type: "string",
+    }
   ]
   const rows = React.useMemo(() =>
     songs.map((song, i) => song.charts.map((chart: any, j: number) => {
@@ -90,6 +96,7 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist }: Song
         freeze: chart.freeze,
         chaos: chart.chaos,
         bpm: song.bpm,
+        timestamp: song.timestamp,
         song: song,
         chart: chart,
       })
@@ -107,7 +114,7 @@ export const SongTable = ({ songs, setChartInfo: setChart, addToPlaylist }: Song
         onRowClick={(params, _event, _details) => {
           console.log(params)
           const row = params.row
-          setChart(row.song, row.chart)
+          setChartInfo(row.song, row.chart)
         }}
         onSelectionModelChange={(ids) => {
           const selectedIDs = new Set(ids);

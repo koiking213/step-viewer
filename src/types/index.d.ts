@@ -14,6 +14,7 @@ export type Song = {
     offset: number;
   }
   banner: string;
+  timestamp: string;
 }
 
 export type Chart = {
