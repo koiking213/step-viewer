@@ -42,6 +42,7 @@ export type Stream = {
       time: number;
   }[];
   cost: number;
+  gimmick: Gimmick;
 }
 
 export type Soflan = {
@@ -71,5 +72,4 @@ export type ChartContent = {
   song: Song;
   chart: Chart;
   stream: Stream;
-  gimmick: Gimmick;
 }

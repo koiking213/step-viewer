@@ -26,6 +26,14 @@ const emptySong: Song = {
   timestamp: "",
 }
 
+const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
+
+const emptyStream: Stream = {
+  stream: [],
+  cost: -1,
+  gimmick: emptyGimmick,
+}
+
 const emptyChart: Chart = {
   difficulty: "",
   level: 0,
@@ -34,7 +42,7 @@ const emptyChart: Chart = {
   voltage: 0,
   air: 0,
   freeze: 0,
-  chaos: 0
+  chaos: 0,
 }
 
 const dir_prefix = "";
@@ -55,12 +63,6 @@ async function getAudio(filepath: string): Promise<HTMLAudioElement> {
   return new Audio(URL.createObjectURL(blob));
 }
 
-async function getGimmick(filepath: string): Promise<Gimmick> {
-  const blob = await downloadFromDropbox(filepath);
-  const text = await blob.text();
-  return JSON.parse(text);
-};
-
 async function getSong(filepath: string): Promise<Stream> {
   const blob = await downloadFromDropbox(filepath);
   const text = await blob.text();
@@ -75,8 +77,6 @@ const SongInfo = ({ song, chart }: SongInfoProps) => {
 }
 
 function App() {
-  const emptyStream: Stream = JSON.parse('{"stream":[], "cost":-1}');
-  const emptyGimmick: Gimmick = JSON.parse('{"soflan":[{"division": 0, "bpm": 120}], "stop":[]}');
   const [audio, setAudio] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [isLoading, setIsLoading] = useState(false)
   const [song, setSong] = useState(emptySong)
@@ -87,7 +87,7 @@ function App() {
   const [banner, setBanner] = useState("")
   const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
   const [playing, setPlaying] = useState(false);
-  const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream, gimmick: emptyGimmick};
+  const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream};
   const [chartContent, setChartContent] = useState(emptyChartContent);
 
   const setChartInfo = useCallback(async (song: Song, chart: Chart) => {
@@ -98,13 +98,11 @@ function App() {
     
     const newAudioPromise = getAudio(`/${dir_prefix}${song.dir_name}/${song.music.path}`);
     const streamPromise = getSong(`/${dir_prefix}${song.dir_name}/${chart.difficulty}.json`);
-    const gimmickPromise = getGimmick(`/${dir_prefix}${song.dir_name}/gimmick.json`);
     const banner = song.banner === "" ? "" : getBanner(`/${dir_prefix}${song.dir_name}/${song.banner}`);
     setSong(song)
     setChart(chart)
     const stream = await streamPromise;
-    const gimmick = await gimmickPromise;
-    setChartContent({song:song, chart:chart, stream:stream, gimmick:gimmick})
+    setChartContent({song:song, chart:chart, stream:stream})
     const newAudio = await newAudioPromise;
     setAudio(newAudio)
     setPlaying(true)

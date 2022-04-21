@@ -629,7 +629,7 @@ type ChartAreaProps = { chartContent:ChartContent; audio: HTMLAudioElement; clap
 const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }: ChartAreaProps) => {
   //const [bpmIsFixed, setBPMIsFixed] = useState(false);
   const stream = chartContent.stream;
-  const gimmick = chartContent.gimmick;
+  const gimmick = chartContent.stream.gimmick;
   const song = chartContent.song;
   const chartOffset = song.music.offset;
   const highestBPM = parseInt((song.bpm.split('-')[1] || song.bpm.split('-')[0]), 10)
