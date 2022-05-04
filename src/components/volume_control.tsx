@@ -3,10 +3,11 @@ import VolumeDownIcon from '@material-ui/icons/VolumeDown';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import { Stack, Slider } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
+import { usePersist } from "../util";
 
-type Props = {audio: HTMLAudioElement};
-export const VolumeControl = ({audio}:Props) => {
-        const [value, setValue] = useState(50);
+type Props = {audio: HTMLAudioElement, name: string};
+export const VolumeControl = ({audio, name}:Props) => {
+        const [value, setValue] = usePersist("volume" + name, 50);
         useEffect(() => {
             audio.volume = value / 100;
         }, [audio, value]);
