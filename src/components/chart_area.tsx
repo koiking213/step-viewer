@@ -35,6 +35,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import { getDivision } from './chart_area/get_division';
+import { usePersist } from "../util";
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -585,7 +586,7 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
                 audio:
               </Grid>
               <Grid item xs={3}>
-                <VolumeControl audio={audio} />
+                <VolumeControl audio={audio} name="audio"/>
               </Grid>
             </Grid>
             <Grid container direction="row" columnSpacing={1}>
@@ -593,7 +594,7 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
                 clap:
               </Grid>
               <Grid item xs={3}>
-                <VolumeControl audio={clap} />
+                <VolumeControl audio={clap} name="clap"/>
               </Grid>
             </Grid>
             <Grid container direction="row" columnSpacing={1}>
@@ -601,7 +602,7 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
                 beat:
               </Grid>
               <Grid item xs={3}>
-                <VolumeControl audio={metronome} />
+                <VolumeControl audio={metronome} name="metronome"/>
               </Grid>
             </Grid>
           </Grid>
@@ -633,11 +634,11 @@ const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }
   const song = chartContent.song;
   const chartOffset = song.music.offset;
   const highestBPM = parseInt((song.bpm.split('-')[1] || song.bpm.split('-')[0]), 10)
-  const [gimmickViewer, setGimmickViewer] = useState<GimmickViewer>("icon");
-  const [rotationMode, setRotationMode] = useState<RotationMode>("off");
-  const [highSpeedMode, setHighSpeedMode] = useState<HighSpeedMode>("ordinal");
-  const [fixedBPM, setFixedBPM] = useState(550);
-  const [highSpeed, setHighSpeed] = useState(1.0);
+  const [gimmickViewer, setGimmickViewer] = usePersist("gimmickViewer", "icon");
+  const [rotationMode, setRotationMode] = usePersist("rotationMode","off");
+  const [highSpeedMode, setHighSpeedMode] = usePersist("highSpeedMode", "ordinal");
+  const [fixedBPM, setFixedBPM] = usePersist("fixedBPM", 550);
+  const [highSpeed, setHighSpeed] = usePersist("highSpeed", 1.0);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const effectiveHighSpeed = highSpeedMode === "bpm" ? fixedBPM / highestBPM : highSpeed
   const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} />;
