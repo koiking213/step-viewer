@@ -323,7 +323,7 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, highSpe
   };
   return (
     <div>
-      <HighSpeedModeSelect setValue={setHighSpeedMode} />
+      <HighSpeedModeSelect value={highSpeedMode} setValue={setHighSpeedMode} />
       <Grid container direction="row" justifyContent="center" alignItems="center">
         <IconButton onClick={() => { if (highSpeed > 0.25) setHighSpeed(highSpeed - 0.25) }}>
           <ArrowLeftIcon />
@@ -419,8 +419,8 @@ const ChartSlider = ({ audio, scrollValue, setScrollValue }: ChartSlicerProps) =
   return <Slider aria-label="Chart" orientation="vertical" value={scrollValue} onChange={handleChange} />
 }
 
-type HighSpeedModeSelectProps = { setValue: (value: HighSpeedMode) => void };
-const HighSpeedModeSelect = ({ setValue }: HighSpeedModeSelectProps) => {
+type HighSpeedModeSelectProps = { value: HighSpeedMode, setValue: (value: HighSpeedMode) => void };
+const HighSpeedModeSelect = ({ value, setValue }: HighSpeedModeSelectProps) => {
   const handler = (event: React.ChangeEvent<HTMLInputElement>, value: string) => {
     switch (value) {
       case "ordinal":
@@ -438,10 +438,10 @@ const HighSpeedModeSelect = ({ setValue }: HighSpeedModeSelectProps) => {
   }
   return (
     <FormControl component="fieldset">
-      <FormLabel component="legend">rotation option</FormLabel>
+      <FormLabel component="legend">high speed option</FormLabel>
       <RadioGroup
         aria-label="highSpeed"
-        defaultValue="ordinal"
+        defaultValue={value}
         name="highspeed-mode"
         onChange={handler}
       >
@@ -453,8 +453,8 @@ const HighSpeedModeSelect = ({ setValue }: HighSpeedModeSelectProps) => {
   );
 }
 
-type GimmickViewerSelectProps = { setValue: (value: GimmickViewer) => void };
-const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
+type GimmickViewerSelectProps = { value: GimmickViewer, setValue: (value: GimmickViewer) => void };
+const GimmickViewerSelect = ({ value, setValue }: GimmickViewerSelectProps) => {
   const handler = (event: React.ChangeEvent<HTMLInputElement>, value: string) => {
     // 来うるvalueは絶対にGimmickViewerのどれかだが、それをコンパイラに教える術を知らない
     switch (value) {
@@ -476,7 +476,7 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
       <FormLabel component="legend">display gimmick</FormLabel>
       <RadioGroup
         aria-label="gimmick"
-        defaultValue="icon"
+        defaultValue={value}
         name="gimmick-display-type"
         onChange={handler}
       >
@@ -488,8 +488,8 @@ const GimmickViewerSelect = ({ setValue }: GimmickViewerSelectProps) => {
   );
 }
 
-type RotationModeSelectProps = { setValue: (value: RotationMode) => void };
-const RotationModeSelect = ({ setValue }: RotationModeSelectProps) => {
+type RotationModeSelectProps = { value: RotationMode, setValue: (value: RotationMode) => void };
+const RotationModeSelect = ({ value, setValue }: RotationModeSelectProps) => {
   const handler = (event: React.ChangeEvent<HTMLInputElement>, value: string) => {
     // 来うるvalueは絶対にGimmickViewerのどれかだが、それをコンパイラに教える術を知らない
     switch (value) {
@@ -514,7 +514,7 @@ const RotationModeSelect = ({ setValue }: RotationModeSelectProps) => {
       <FormLabel component="legend">rotation option</FormLabel>
       <RadioGroup
         aria-label="rotation"
-        defaultValue="off"
+        defaultValue={value}
         name="rotation-mode"
         onChange={handler}
       >
@@ -552,10 +552,12 @@ const PlaySpeedArea = ({ audio }: PlaySpeedAreaProps) => {
 }
 
 type SettingAreaProps = {
-  setHighSpeedMode: (val: HighSpeedMode) => void;
-  setRotationMode: (val: RotationMode) => void;
-  setGimmickViewer: (val: GimmickViewer) => void,
   highSpeedMode: HighSpeedMode,
+  setHighSpeedMode: (val: HighSpeedMode) => void,
+  rotationMode: RotationMode,
+  setRotationMode: (val: RotationMode) => void,
+  gimmickViewer: GimmickViewer,
+  setGimmickViewer: (val: GimmickViewer) => void,
   highSpeed: number,
   setHighSpeed: (highSpeed: number) => void,
   audio: HTMLAudioElement,
@@ -564,7 +566,7 @@ type SettingAreaProps = {
   fixedBPM: number,
   setFixedBPM: (fixedBPM: number) => void,
 };
-const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, highSpeedMode, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM }: SettingAreaProps) => {
+const SettingArea = ({ highSpeedMode, setHighSpeedMode, rotationMode, setRotationMode, gimmickViewer, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
@@ -611,12 +613,12 @@ const SettingArea = ({ setHighSpeedMode, setRotationMode, setGimmickViewer, high
       <Grid container direction="row" columnSpacing={1} >
         <Card variant="outlined">
           <CardContent>
-            <GimmickViewerSelect setValue={setGimmickViewer} />
+            <GimmickViewerSelect value={gimmickViewer} setValue={setGimmickViewer} />
           </CardContent>
         </Card>
         <Card variant="outlined">
           <CardContent>
-            <RotationModeSelect setValue={setRotationMode} />
+            <RotationModeSelect value={rotationMode} setValue={setRotationMode} />
           </CardContent>
         </Card>
       </Grid>
@@ -673,7 +675,9 @@ const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }
       </Grid>
       <Grid item >
         <SettingArea
+          rotationMode={rotationMode}
           setRotationMode={setRotationMode}
+          gimmickViewer={gimmickViewer}
           setGimmickViewer={setGimmickViewer}
           highSpeed={highSpeed}
           setHighSpeed={setHighSpeed}
