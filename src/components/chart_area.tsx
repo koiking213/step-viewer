@@ -530,20 +530,25 @@ const RotationModeSelect = ({ value, setValue }: RotationModeSelectProps) => {
 type PlaySpeedAreaProps = { audio: HTMLAudioElement };
 const PlaySpeedArea = ({ audio }: PlaySpeedAreaProps) => {
   const [playSpeed, setPlaySpeed] = useState(1.0);
+  useEffect(() => {
+    audio.playbackRate = playSpeed
+  }, [audio]);
   return (
     <Grid container direction="row" justifyContent="center" alignItems="center">
       <div>Play Speed: {playSpeed.toFixed(2)}</div>
       <IconButton onClick={() => {
         if (playSpeed > 0.1) {
-          setPlaySpeed(playSpeed - 0.1);
-          audio.playbackRate = playSpeed
+          let newPlaySpeed = playSpeed - 0.1;
+          setPlaySpeed(newPlaySpeed);
+          audio.playbackRate = newPlaySpeed
         }
       }}>
         <RemoveIcon />
       </IconButton>
       <IconButton onClick={() => {
-        setPlaySpeed(playSpeed + 0.1)
-        audio.playbackRate = playSpeed
+        let newPlaySpeed = playSpeed + 0.1;
+        setPlaySpeed(newPlaySpeed)
+        audio.playbackRate = newPlaySpeed
       }}>
         <AddIcon />
       </IconButton>
