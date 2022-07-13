@@ -43,7 +43,6 @@ function getDivisionRecur(time: number, doneTime: number, gimmicks: TimingInfo[]
 
 // timeは秒
 export function getDivision(time: number, gimmicks: TimingInfo[]): number {
-  // todo: 最初がstopだとバグる
   const bpm = gimmicks[0].value
   const ret = getDivisionRecur(time, 0, gimmicks.slice(1), 0, bpm)
   return ret
