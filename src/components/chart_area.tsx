@@ -268,6 +268,12 @@ function getSortedGimmicks(gimmick: Gimmick): TimingInfo[] {
     else if (b.type === 'stop') return 1;
     else return -1;
   });
+  // swap first and second elements if first is stop
+  if (ret[0].type === 'stop') {
+    const tmp = ret[0];
+    ret[0] = ret[1];
+    ret[1] = tmp;
+  }
   return ret;
 }
 
