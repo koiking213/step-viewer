@@ -12,6 +12,9 @@ import Grid from '@material-ui/core/Grid'
 import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
 import { PlayListArea } from './components/playlist'
+import AppBar from './components/app_bar'
+
+
 
 const emptySong: Song = {
   title: "",
@@ -125,12 +128,16 @@ function App() {
       setMetronome(await metronome);
       setIsLoading(false);
     };
+    document.title = "Step Viewer";
     f();
   }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
   return (
+    <div>
     <Container>
+      <AppBar appName="Step Viewer" />
       <Box sx={{ my: 4 }}>
+        
         <Grid container direction="row" spacing={2}>
           <Grid item >
             <ChartArea chartContent={chartContent} audio={audio} clap={clap} metronome={metronome} playing={playing}
@@ -160,6 +167,7 @@ function App() {
         }} />
       </Box>
     </Container>
+    </div>
   );
 }
 
