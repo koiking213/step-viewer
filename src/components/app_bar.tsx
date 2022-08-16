@@ -1,4 +1,4 @@
-import { AppBar as AppBarBase, Box, Toolbar, Typography } from "@mui/material";
+import { AppBar as AppBarBase, Box, Toolbar } from "@mui/material";
 
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";

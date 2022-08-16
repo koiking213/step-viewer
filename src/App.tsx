@@ -137,7 +137,6 @@ function App() {
     <Container>
       <AppBar appName="Step Viewer" version='1.0.0' last_update="2022/08/16"/>
       <Box sx={{ my: 4 }}>
-        
         <Grid container direction="row" spacing={2}>
           <Grid item >
             <ChartArea chartContent={chartContent} audio={audio} clap={clap} metronome={metronome} playing={playing}
