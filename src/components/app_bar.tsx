@@ -6,8 +6,10 @@ import Notification from './app_bar/notification';
 
 type Props = {
     appName: string;
+    version: string;
+    last_update: string;
 };
-const AppBar = ({ appName }: Props) => {
+const AppBar = ({ appName, version, last_update }: Props) => {
     return (
         <AppBarBase position="relative" color="inherit" elevation={1}>
             <Toolbar>
@@ -15,7 +17,7 @@ const AppBar = ({ appName }: Props) => {
                     <MenuIcon />
                 </IconButton>
                 <Box sx={{ flexGrow: 1 }} />
-                Step Viewer 1.0.0 (date)
+                {appName} {version} ({last_update})
                 <Box sx={{ flexGrow: 1 }} />
                 <IconButton>
                     <Notification />
