@@ -1,7 +1,7 @@
 import './App.css';
 
 import { Stream, Gimmick, Song, Chart, ChartContent } from './types/index'
-import { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 
 import { Dropbox } from 'dropbox'
 import ReactLoading from 'react-loading';
@@ -13,6 +13,8 @@ import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
 import { PlayListArea } from './components/playlist'
 import AppBar from './components/app_bar'
+import { MyTab, TabPanel } from './components/tab'
+
 
 
 
@@ -90,7 +92,7 @@ function App() {
   const [banner, setBanner] = useState("")
   const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
   const [playing, setPlaying] = useState(false);
-  const emptyChartContent: ChartContent = {song: emptySong, chart: emptyChart, stream: emptyStream};
+  const emptyChartContent: ChartContent = { song: emptySong, chart: emptyChart, stream: emptyStream };
   const [chartContent, setChartContent] = useState(emptyChartContent);
 
   const setChartInfo = useCallback(async (song: Song, chart: Chart) => {
@@ -98,14 +100,14 @@ function App() {
     console.log(audio)
     audio.pause()
     setIsLoading(true)
-    
+
     const newAudioPromise = getAudio(`/${dir_prefix}${song.dir_name}/${song.music.path}`);
     const streamPromise = getSong(`/${dir_prefix}${song.dir_name}/${chart.difficulty}.json`);
     const banner = song.banner === "" ? "" : getBanner(`/${dir_prefix}${song.dir_name}/${song.banner}`);
     setSong(song)
     setChart(chart)
     const stream = await streamPromise;
-    setChartContent({song:song, chart:chart, stream:stream})
+    setChartContent({ song: song, chart: chart, stream: stream })
     const newAudio = await newAudioPromise;
     setAudio(newAudio)
     setPlaying(true)
@@ -132,40 +134,47 @@ function App() {
     f();
   }, []);
   const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
+  const [tabValue, setTabValue] = useState(0);
   return (
     <div>
-    <Container>
-      <AppBar appName="Step Viewer" version='1.0.0' last_update="2022/08/16"/>
-      <Box sx={{ my: 4 }}>
-        <Grid container direction="row" spacing={2}>
-          <Grid item >
-            <ChartArea chartContent={chartContent} audio={audio} clap={clap} metronome={metronome} playing={playing}
-              setPlaying={(playing: boolean) => {
-                setPlaying(playing);
-                if (playing) {
-                  audio.play();
-                } else {
-                  audio.pause();
-                }
-              }} />
+      <Container>
+        <AppBar appName="Step Viewer" version='1.0.0' last_update="2022/08/16" />
+        <Box sx={{ my: 4 }}>
+          <Grid container direction="row" spacing={2}>
+            <Grid item >
+              <ChartArea chartContent={chartContent} audio={audio} clap={clap} metronome={metronome} playing={playing}
+                setPlaying={(playing: boolean) => {
+                  setPlaying(playing);
+                  if (playing) {
+                    audio.play();
+                  } else {
+                    audio.pause();
+                  }
+                }} />
+            </Grid>
+            <Grid item >
+              <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" alt="banner" />
+              <Box display="flex" justifyContent="center" m={1} width="300" >
+                <Card sx={{ display: "inline-block", width: 300 }} >
+                  <SongInfo song={song} chart={chart} />
+                </Card>
+              </Box>
+              <PlayListArea chartInfoList={playlist} setChartInfoList={setPlaylist} setChartInfo={setChartInfo} audio={audio} />
+            </Grid>
           </Grid>
-          <Grid item >
-            <img src={banner === "" ? "/no_image.png" : banner} width="200" height="200" alt="banner" />
-            <Box display="flex" justifyContent="center" m={1} width="300" >
-              <Card sx={{ display: "inline-block", width: 300 }} >
-                <SongInfo song={song} chart={chart} />
-              </Card>
-            </Box>
-            <PlayListArea chartInfoList={playlist} setChartInfoList={setPlaylist} setChartInfo={setChartInfo} audio={audio} />
-          </Grid>
-        </Grid>
-        <Loading />
-        <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {
-          console.log("addToPlaylist")
-          setPlaylist(playlist.concat(selecteds))
-        }} />
-      </Box>
-    </Container>
+          <Loading />
+          <MyTab value={tabValue} setter={setTabValue} />
+          <TabPanel value={tabValue} index={0}>
+            <SongTable songs={songs} setChartInfo={setChartInfo} addToPlaylist={(selecteds) => {
+              console.log("addToPlaylist")
+              setPlaylist(playlist.concat(selecteds))
+            }} />
+          </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            score table will be shown
+          </TabPanel>
+        </Box>
+      </Container>
     </div>
   );
 }
