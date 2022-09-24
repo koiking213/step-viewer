@@ -1,6 +1,6 @@
 import './App.css';
 
-import { Stream, Gimmick, Song, Chart, ChartContent } from './types/index'
+import { Stream, Gimmick, Song, Chart, ChartContent, SongScore, PlayerID, PlayerIDs } from './types/index'
 import React, { useEffect, useState, useCallback } from "react"
 
 import { Dropbox } from 'dropbox'
@@ -12,6 +12,7 @@ import Grid from '@material-ui/core/Grid'
 import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
 import { PlayListArea } from './components/playlist'
+import { ScoreTable } from './components/score_table'
 import AppBar from './components/app_bar'
 import { MyTab, TabPanel } from './components/tab'
 
@@ -89,6 +90,8 @@ function App() {
   const [clap, setClap] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [metronome, setMetronome] = useState<HTMLAudioElement>(new Audio('/silence.wav'))
   const [songs, setSongs] = useState<Song[]>([])
+  const [scores, setScores] = useState<SongScore[]>([])
+  const [player_ids, setPlayerIDs] = useState<PlayerID[]>([])
   const [banner, setBanner] = useState("")
   const [playlist, setPlaylist] = useState<ChartInfo[]>([]);
   const [playing, setPlaying] = useState(false);
@@ -121,11 +124,27 @@ function App() {
       setIsLoading(true);
       const clap = getAudio("/Clap-1.wav");
       const metronome = getAudio("/metronome.ogg");
-      const songsJson = downloadFromDropbox(`/${dir_prefix}songs.json`);
-      const blob = await songsJson
-      const text = await blob.text();
-      const songs: Song[] = JSON.parse(text)
-      setSongs(songs)
+      {
+        const songsJson = downloadFromDropbox(`/${dir_prefix}songs.json`);
+        const blob = await songsJson
+        const text = await blob.text();
+        const songs: Song[] = JSON.parse(text)
+        setSongs(songs)
+      }
+      {
+        const scoreJson = downloadFromDropbox(`/${dir_prefix}scores.json`);
+        const blob = await scoreJson
+        const text = await blob.text();
+        const scores: SongScore[] = JSON.parse(text)
+        setScores(scores)
+      }
+      {
+        const idJson = downloadFromDropbox(`/${dir_prefix}ids.json`);
+        const blob = await idJson
+        const text = await blob.text();
+        const player_ids: PlayerIDs = JSON.parse(text)
+        setPlayerIDs(player_ids.players)
+      }
       setClap(await clap);
       setMetronome(await metronome);
       setIsLoading(false);
@@ -171,7 +190,7 @@ function App() {
             }} />
           </TabPanel>
           <TabPanel value={tabValue} index={1}>
-            score table will be shown
+            <ScoreTable scores={scores} ids={player_ids} />
           </TabPanel>
         </Box>
       </Container>

@@ -31,15 +31,15 @@ export type Chart = {
 
 export type Stream = {
   stream: {
-      arrows: [{
-          direction: Direction;
-          type: string;
-          end: number;
-          end_time: number;
-      }];
-      color: Color;
-      offset: number;
-      time: number;
+    arrows: [{
+      direction: Direction;
+      type: string;
+      end: number;
+      end_time: number;
+    }];
+    color: Color;
+    offset: number;
+    time: number;
   }[];
   cost: number;
   gimmick: Gimmick;
@@ -51,8 +51,8 @@ export type Soflan = {
 };
 
 export type Stop = {
-    division: number;
-    time: number;
+  division: number;
+  time: number;
 }
 
 export type Gimmick = {
@@ -72,4 +72,28 @@ export type ChartContent = {
   song: Song;
   chart: Chart;
   stream: Stream;
+}
+
+export type SongScore = {
+  name: string;
+  charts: ChartScore[];
+}
+
+export type ChartScore = {
+  difficulty: string;
+  scores: PlayerScore[];
+}
+
+export type PlayerScore = {
+  score: number;
+  player: string;
+}
+
+export type PlayerID = {
+  id: string;
+  name: string;
+}
+
+export type PlayerIDs = {
+  players: PlayerID[];
 }
