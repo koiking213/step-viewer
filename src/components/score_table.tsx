@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from "react"
 import { DataGrid, GridColDef, GridRowData, GridToolbar } from '@mui/x-data-grid';
-import { SongScore, PlayerID } from '../types/index';
+import { Song, SongScore, PlayerID } from '../types/index';
 
-type ScoreTableProps = { scores: SongScore[], ids: PlayerID[] };
-export const ScoreTable = ({ scores, ids }: ScoreTableProps) => {
+const ensure = function <T>(arg: T | undefined | null) {
+  if (arg === undefined || arg === null) throw new Error('arg is undefined unexpectedly')
+  return arg
+}
+
+type ScoreTableProps = { scores: SongScore[], ids: PlayerID[], songs: Song[] };
+export const ScoreTable = ({ scores, ids, songs }: ScoreTableProps) => {
   const columns: GridColDef[] = [
     {
-      field: "song",
+      field: "song_name",
       headerName: "Song",
       width: 250,
+    },
+    {
+      field: "level",
+      headerName: "Level",
+      width: 120,
     },
     {
       field: "difficulty",
@@ -25,13 +35,16 @@ export const ScoreTable = ({ scores, ids }: ScoreTableProps) => {
     })
   );
   const rows = React.useMemo(() =>
-    scores.map(song =>
+    scores.filter((score) => songs.some((song) => song.dir_name == score.name)).map(song =>
       song.charts.map(chart => {
+        let song_info = ensure(songs.find((s) => s.dir_name == song.name))
+        let chart_info = ensure(song_info.charts.find((c) => c.difficulty == chart.difficulty))
         let row: GridRowData =
         {
           id: song.name + chart.difficulty,
-          song: song.name,
+          song_name: song_info.title,
           difficulty: chart.difficulty,
+          level: chart_info.level,
         };
         chart.scores.map(player_score => {
           row[player_score.player] = player_score.score;

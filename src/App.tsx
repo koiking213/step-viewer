@@ -190,7 +190,7 @@ function App() {
             }} />
           </TabPanel>
           <TabPanel value={tabValue} index={1}>
-            <ScoreTable scores={scores} ids={player_ids} />
+            <ScoreTable scores={scores} ids={player_ids} songs={songs} />
           </TabPanel>
         </Box>
       </Container>
