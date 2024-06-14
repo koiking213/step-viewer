@@ -679,7 +679,7 @@ const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }
   const [highSpeed, setHighSpeed] = usePersist("highSpeed", 1.0);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const effectiveHighSpeed = highSpeedMode === "bpm" ? fixedBPM / highestBPM : highSpeed
-  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} audio={audio} constantTime={constantTime/1000} chartOffset={chartOffset}/>;
+  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} audio={audio} constantTime={constantTime/1000 + 0.2} chartOffset={chartOffset}/>;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={effectiveHighSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
   const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
   useEffect(() => {
