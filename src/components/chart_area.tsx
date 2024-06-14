@@ -161,11 +161,15 @@ function getNoteTextures(): { [key: string]: Texture[] } {
   return dict;
 }
 
-type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean, fixedBPM: number, bpmIsFixed: boolean, rotationMode: RotationMode };
-const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode }: CanvasProps) => {
+type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean, fixedBPM: number, bpmIsFixed: boolean, rotationMode: RotationMode, audio: HTMLAudioElement, constantTime: number, chartOffset: number};
+const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode, audio, constantTime, chartOffset }: CanvasProps) => {
   useEffect(() => {
     console.log("canvas updated");
-  }, []);
+  }, [audio]); // Add currentTime as a dependency to useEffect
+  const [time, setTime] = useState(0);
+  useTick(_delta => {
+    setTime(audio.currentTime);
+  });
   const arrowOffsetScale = arrowSize * arrowPosEpsilon;
   const initialNoteOfs = 0;
   const yMultiplier = bpmIsFixed ? 1 : highSpeed;
@@ -204,6 +208,16 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
   const arrows = stream.stream
     .map((division) => {
       const hasFreeze = division.arrows.some((arrow) => arrow.type === "freeze")
+      const opacity = (() => {
+        console.log(time, division.time, constantTime)
+        if (time + constantTime + chartOffset > division.time) {
+          const phaseDuration = 0.3; // duration of the fade-in phase in milliseconds
+          const phaseProgress = Math.min((time + constantTime + chartOffset - division.time) / phaseDuration, 1);
+          return phaseProgress;
+        } else {
+          return 0;
+        }
+      })();
       return division.arrows.map((arrow) => {
         const startYOffset =
           bpmIsFixed ?
@@ -215,13 +229,13 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
               ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
               (arrow.end - division.offset) * arrowOffsetScale;
           return (
-            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier} />
+            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier} opacity={opacity}/>
           );
         } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} />;
+          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} opacity={opacity}/>;
         } else {
           return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} />
+            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} opacity={opacity}/>
           );
         }
       });
@@ -322,10 +336,14 @@ type HighSpeedAreaProps = {
   highSpeed: number, setHighSpeed: (highSpeed: number) => void,
   fixedBPM: number, setFixedBPM: (bpm: number) => void,
   highSpeedMode: HighSpeedMode, setHighSpeedMode: (mode: HighSpeedMode) => void,
+  constantTime: number, setConstantTime: (time: number) => void
 };
-const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, highSpeedMode, setHighSpeedMode }: HighSpeedAreaProps) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, highSpeedMode, setHighSpeedMode, constantTime, setConstantTime }: HighSpeedAreaProps) => {
+  const handleBPMChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFixedBPM(parseInt(e.target.value));
+  };
+  const handleConstantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConstantTime(parseInt(e.target.value));
   };
   return (
     <div>
@@ -341,7 +359,12 @@ const HighSpeedArea = ({ highSpeed, setHighSpeed, fixedBPM, setFixedBPM, highSpe
       </Grid>
       <Grid container direction="row" justifyContent="center" alignItems="center">
         <TextField disabled={highSpeedMode === "ordinal"} id="fixed-BPM" label="BPM" type="number" variant="standard"
-          onChange={handleChange} value={fixedBPM}
+          onChange={handleBPMChange} value={fixedBPM}
+        />
+      </Grid>
+      <Grid container direction="row" justifyContent="center" alignItems="center">
+        <TextField id="constant-time" label="CONSTANT" type="number" variant="standard"
+          onChange={handleConstantChange} value={constantTime}
         />
       </Grid>
     </div>
@@ -576,13 +599,15 @@ type SettingAreaProps = {
   metronome: HTMLAudioElement,
   fixedBPM: number,
   setFixedBPM: (fixedBPM: number) => void,
+  constantTime: number,
+  setConstantTime: (constantTime: number) => void,
 };
-const SettingArea = ({ highSpeedMode, setHighSpeedMode, rotationMode, setRotationMode, gimmickViewer, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM }: SettingAreaProps) => {
+const SettingArea = ({ highSpeedMode, setHighSpeedMode, rotationMode, setRotationMode, gimmickViewer, setGimmickViewer, highSpeed, setHighSpeed, audio, clap, metronome, fixedBPM, setFixedBPM, constantTime, setConstantTime }: SettingAreaProps) => {
   return (
     <Grid container direction="column" spacing={2} >
       <Card variant="outlined">
         <CardContent>
-          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} fixedBPM={fixedBPM} setFixedBPM={setFixedBPM} highSpeedMode={highSpeedMode} setHighSpeedMode={setHighSpeedMode} />
+          <HighSpeedArea highSpeed={highSpeed} setHighSpeed={setHighSpeed} fixedBPM={fixedBPM} setFixedBPM={setFixedBPM} highSpeedMode={highSpeedMode} setHighSpeedMode={setHighSpeedMode} constantTime={constantTime} setConstantTime={setConstantTime} />
         </CardContent>
       </Card>
       <Card variant="outlined">
@@ -651,16 +676,17 @@ const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }
   const [rotationMode, setRotationMode] = usePersist("rotationMode","off");
   const [highSpeedMode, setHighSpeedMode] = usePersist("highSpeedMode", "ordinal");
   const [fixedBPM, setFixedBPM] = usePersist("fixedBPM", 550);
+  const [constantTime, setConstantTime] = usePersist("constantTime", 800);
   const [highSpeed, setHighSpeed] = usePersist("highSpeed", 1.0);
   const sortedTimingInfo = getSortedGimmicks(gimmick)
   const effectiveHighSpeed = highSpeedMode === "bpm" ? fixedBPM / highestBPM : highSpeed
-  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} />;
+  const canvas = <Canvas rotationMode={rotationMode} playing={playing} stream={stream} highSpeed={effectiveHighSpeed} fixedBPM={fixedBPM} bpmIsFixed={highSpeedMode === "fixed"} audio={audio} constantTime={constantTime/1000} chartOffset={chartOffset}/>;
   const canvasMetaInfo = <CanvasMetaInfo stream={stream} highSpeed={effectiveHighSpeed} gimmick={gimmick} gimmickViewer={gimmickViewer} />;
   const [sortedArrowTimes, setSortedArrowTimes] = useState<number[]>([]);
   useEffect(() => {
     const arrowStream = stream.stream.filter(division => division.arrows.some((arrow) => arrow.type !== "mine"));
     setSortedArrowTimes(arrowStream.map(arrows => arrows.time));
-  }, [stream]);
+  }, [stream, audio]);
   useEffect(() => {
     console.log("chart area updated");
   }, []);
@@ -699,6 +725,8 @@ const ChartArea = ({ chartContent, audio, clap, metronome, playing, setPlaying }
           setFixedBPM={setFixedBPM}
           highSpeedMode={highSpeedMode}
           setHighSpeedMode={setHighSpeedMode}
+          constantTime={constantTime}
+          setConstantTime={setConstantTime}
         />
       </Grid>
     </Grid>
