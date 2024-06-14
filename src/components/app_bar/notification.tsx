@@ -32,6 +32,13 @@ const ReleaseNoteItem = ({ content }: ReleaseNoteItemProps) => {
 
 const release_notes: ReleaseNoteContent[] = [
   {
+    version: "1.1.0",
+    date: "2024/06/14",
+    texts: [
+      "CONSTANTオプションを追加",
+    ]
+  },
+  {
     version: "1.0.0",
     date: "2022/08/16",
     texts: [
