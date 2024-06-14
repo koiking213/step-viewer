@@ -135,7 +135,7 @@ function App() {
   return (
     <div>
     <Container>
-      <AppBar appName="Step Viewer" version='1.0.0' last_update="2022/08/16"/>
+      <AppBar appName="Step Viewer" version='1.1.0' last_update="2024/06/14"/>
       <Box sx={{ my: 4 }}>
         <Grid container direction="row" spacing={2}>
           <Grid item >
