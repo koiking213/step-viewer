@@ -163,9 +163,6 @@ function getNoteTextures(): { [key: string]: Texture[] } {
 
 type CanvasProps = { stream: Stream, highSpeed: number, playing: boolean, fixedBPM: number, bpmIsFixed: boolean, rotationMode: RotationMode, audio: HTMLAudioElement, constantTime: number, chartOffset: number};
 const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode, audio, constantTime, chartOffset }: CanvasProps) => {
-  useEffect(() => {
-    console.log("canvas updated");
-  }, [audio]); // Add currentTime as a dependency to useEffect
   const [time, setTime] = useState(0);
   useTick(_delta => {
     setTime(audio.currentTime);
@@ -206,10 +203,10 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
     }
   };
   const arrows = stream.stream
+    .filter((division) => division.time < time + constantTime + chartOffset)
     .map((division) => {
       const hasFreeze = division.arrows.some((arrow) => arrow.type === "freeze")
       const opacity = (() => {
-        console.log(time, division.time, constantTime)
         if (time + constantTime + chartOffset > division.time) {
           const phaseDuration = 0.3; // duration of the fade-in phase in milliseconds
           const phaseProgress = Math.min((time + constantTime + chartOffset - division.time) / phaseDuration, 1);
@@ -218,27 +215,29 @@ const Canvas = ({ stream, highSpeed, playing, fixedBPM, bpmIsFixed, rotationMode
           return 0;
         }
       })();
-      return division.arrows.map((arrow) => {
-        const startYOffset =
-          bpmIsFixed ?
-            ((division.time * fixedBPM / 240 * 192) - initialNoteOfs) * arrowOffsetScale :
-            (division.offset - initialNoteOfs) * arrowOffsetScale;
-        if (arrow.type === "freeze") {
-          const length =
+      return division.arrows
+        .filter((arrow) => (arrow.type === "freeze" ? arrow.end_time : division.time) > time + chartOffset - 0.3)
+        .map((arrow) => {
+          const startYOffset =
             bpmIsFixed ?
-              ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
-              (arrow.end - division.offset) * arrowOffsetScale;
-          return (
-            <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier} opacity={opacity}/>
-          );
-        } else if (arrow.type === "mine") {
-          return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} opacity={opacity}/>;
-        } else {
-          return (
-            <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} opacity={opacity}/>
-          );
-        }
-      });
+              ((division.time * fixedBPM / 240 * 192) - initialNoteOfs) * arrowOffsetScale :
+              (division.offset - initialNoteOfs) * arrowOffsetScale;
+          if (arrow.type === "freeze") {
+            const length =
+              bpmIsFixed ?
+                ((arrow.end_time - division.time) * fixedBPM / 240 * 192) * arrowOffsetScale :
+                (arrow.end - division.offset) * arrowOffsetScale;
+            return (
+              <FreezeArrow dir={rotate(arrow.direction)} offset={startYOffset} length={length} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} yMultiplier={yMultiplier} opacity={opacity}/>
+            );
+          } else if (arrow.type === "mine") {
+            return <Mine playing={playing} dir={rotate(arrow.direction)} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} opacity={opacity}/>;
+          } else {
+            return (
+              <Arrow freeze={hasFreeze} playing={playing} dir={rotate(arrow.direction)} color={division.color} offset={startYOffset} arrowSize={arrowSize} key={`${arrow.direction}-${startYOffset}`} noteTextures={noteTextures} yMultiplier={yMultiplier} opacity={opacity}/>
+            );
+          }
+        });
     })
     .flat();
   return <Container>{arrows}</Container>;
