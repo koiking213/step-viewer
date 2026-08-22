@@ -51,7 +51,8 @@ const emptyChart: Chart = {
 const dir_prefix = "";
 
 async function downloadFromDropbox(filepath: string) {
-  const dbx = new Dropbox({ accessToken: import.meta.env.VITE_DROPBOX_TOKEN });
+  const accessToken = import.meta.env.VITE_DROPBOX_TOKEN ?? import.meta.env.REACT_APP_DROPBOX_TOKEN;
+  const dbx = new Dropbox({ accessToken });
   const response = await dbx.filesDownload({ path: filepath });
   return (response.result as any).fileBlob;
 }
