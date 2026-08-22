@@ -1,5 +1,6 @@
 import { getDivision } from './get_division';
 import { TimingInfo } from '../../types';
+import { expect, test } from 'vitest';
 
 test('get_division', () => {
   const timingInfo1: TimingInfo[] = [{type: 'soflan', division: 0, value: 120}];

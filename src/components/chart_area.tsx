@@ -10,30 +10,32 @@ import { settings, SCALE_MODES, Texture, BaseTexture, Rectangle } from "pixi.js"
 import { Stream, Gimmick, Stop, Soflan, TimingInfo, Direction, ChartContent } from "../types/index";
 import { useEffect } from "react";
 import { Arrow, Mine, FreezeArrow } from "./chart_area/notes";
-import Grid from '@material-ui/core/Grid'
-import IconButton from '@material-ui/core/IconButton';
-import ReplayIcon from '@material-ui/icons/Replay';
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton';
+import { Replay as ReplayIcon } from '@mui/icons-material';
 import { VolumeControl } from './volume_control';
 import { DivisionLine } from './chart_area/division_line'
-import { Slider } from '@material-ui/core';
-import Box from '@material-ui/core/Box';
+import { Slider } from '@mui/material';
+import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Remove';
-import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
-import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
+import {
+  Add as AddIcon,
+  ArrowLeft as ArrowLeftIcon,
+  ArrowRight as ArrowRightIcon,
+  PauseCircleOutlineRounded as PauseCircleOutlineRoundedIcon,
+  PlayCircleOutlineRounded as PlayCircleOutlineRoundedIcon,
+  Remove as RemoveIcon,
+} from '@mui/icons-material';
 
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 import { getDivision } from './chart_area/get_division';
 import { usePersist } from "../util";
 

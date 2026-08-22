@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import VolumeDownIcon from '@material-ui/icons/VolumeDown';
-import VolumeUpIcon from '@material-ui/icons/VolumeUp';
-import { Stack, Slider } from '@material-ui/core';
-import Box from '@material-ui/core/Box';
+import { VolumeDown as VolumeDownIcon, VolumeUp as VolumeUpIcon } from '@mui/icons-material';
+import { Stack, Slider } from '@mui/material';
+import Box from '@mui/material/Box';
 import { usePersist } from "../util";
 
 type Props = {audio: HTMLAudioElement, name: string};

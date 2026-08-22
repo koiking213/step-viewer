@@ -4,15 +4,17 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Card from '@material-ui/core/Card';
-import IconButton from '@material-ui/core/IconButton';
+import Card from '@mui/material/Card';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import LoopIcon from '@mui/icons-material/Loop';
-import ShuffleIcon from '@mui/icons-material/Shuffle';
-import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Delete as DeleteIcon,
+  Loop as LoopIcon,
+  PlayCircleOutline as PlayCircleOutlineIcon,
+  Shuffle as ShuffleIcon,
+} from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
-import { Box, ListItem, ToggleButton } from '@material-ui/core';
+import { Box, ListItem, ToggleButton } from '@mui/material';
 
 type ChartInfo = { song: Song, chart: Chart };
 
