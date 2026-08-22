@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Song, Chart } from '../types/index'
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 
 type ChartInfo = { song: Song, chart: Chart };
 type SongTableProps = { songs: Song[], setChartInfo: (song: Song, chart: Chart) => void, addToPlaylist: (info: ChartInfo[]) => void }

@@ -1,11 +1,11 @@
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import { NotificationsNone as NotificationsNoneIcon } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useState } from "react"
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 
 
 

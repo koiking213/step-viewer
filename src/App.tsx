@@ -4,11 +4,11 @@ import { Stream, Gimmick, Song, Chart, ChartContent } from './types/index'
 import { useEffect, useState, useCallback } from "react"
 
 import { Dropbox } from 'dropbox'
-import ReactLoading from 'react-loading';
-import Container from '@material-ui/core/Container';
-import Box from '@material-ui/core/Box';
-import Card from '@material-ui/core/Card';
-import Grid from '@material-ui/core/Grid'
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid'
 import { SongTable } from './components/table'
 import ChartArea from './components/chart_area'
 import { PlayListArea } from './components/playlist'
@@ -51,7 +51,7 @@ const emptyChart: Chart = {
 const dir_prefix = "";
 
 async function downloadFromDropbox(filepath: string) {
-  const dbx = new Dropbox({ accessToken: process.env.REACT_APP_DROPBOX_TOKEN });
+  const dbx = new Dropbox({ accessToken: import.meta.env.VITE_DROPBOX_TOKEN });
   const response = await dbx.filesDownload({ path: filepath });
   return (response.result as any).fileBlob;
 }
@@ -131,7 +131,7 @@ function App() {
     document.title = "Step Viewer";
     f();
   }, []);
-  const Loading = () => isLoading ? <ReactLoading type="spin" color="black" /> : <> </>
+  const Loading = () => isLoading ? <CircularProgress color="inherit" /> : null;
   return (
     <div>
     <Container>

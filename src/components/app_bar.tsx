@@ -1,7 +1,7 @@
 import { AppBar as AppBarBase, Box, Toolbar } from "@mui/material";
 
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
+import IconButton from "@mui/material/IconButton";
+import { Menu as MenuIcon } from "@mui/icons-material";
 import Notification from './app_bar/notification';
 
 type Props = {
